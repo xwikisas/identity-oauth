@@ -1,0 +1,6 @@
+com.xwiki.identityoauth.internal.IdentityOAuthXWikiObjects
+com.xwiki.identityoauth.internal.CookieAuthenticationPersistence
+com.xwiki.identityoauth.internal.IdentityOAuthAuthService
+com.xwiki.identityoauth.internal.IdentityOAuthManagerImpl
+com.xwiki.identityoauth.internal.IdentityOAuthEventListener
+com.xwiki.identityoauth.IdentityOAuthScriptService

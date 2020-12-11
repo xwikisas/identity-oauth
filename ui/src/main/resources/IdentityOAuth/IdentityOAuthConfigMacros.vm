@@ -1,0 +1,62 @@
+{{velocity output=false}}
+
+## Identity OAuth Config macros
+## - a set of macros useful for editing the OAuth-related configurations
+## - this page should be included with #includeInContext("IdentityOAuth.IdentityOAuthConfigMacros")
+##   so that it defines a few useful constants which you can use, includes javascript and stylesheee
+##   extensions. The macros it defines should be called after all necessary variables are defined,
+##   notably oauthProviderName.
+## lets the JavaScript and CSS extensions be loaded
+#set ($mainReference = $services.model.createDocumentReference('', 'IdentityOAuth', 'WebPreferences'))
+#if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
+  $services.identityoauth.init()
+
+  #macro (ioIncludeUIX)
+    $xwiki.jsx.use('IdentityOAuth.IdentityOAuthConfigClass')
+    $xwiki.ssx.use('IdentityOAuth.IdentityOAuthConfigClass')
+    #set($myTranslationPrefix='IdentityOAuth.IdentityOAuthConfigClass_')
+  #end
+
+
+  ## defines formId, propNamePrefixIO, propNamePrefixO, configDoc, objIO, objO
+  #macro (initConfigObjects $configDocName $classNameO $translationPfx)
+    #set($formId = "${section.toLowerCase()}_${configDocName1}")
+    #set($configDoc = $xwiki.getDocument($configDocName))
+
+    #set($classNameIO="IdentityOAuth.IdentityOAuthConfigClass")
+    #set($propNamePrefixIO="${configDoc.fullName}_${classNameIO}_0")
+    #set($objIO = $configDoc.getObject($classNameIO))
+
+    #set($propNamePrefixO="${configDoc.fullName}_${classNameO}_0")
+    #set($objO = $configDoc.getObject($classNameO))
+
+    #set($translationPrefix = $translationPfx)
+  #end
+
+
+  ## t: shorthand for translation
+  ## TODO: this only works from xwiki 10.2... fork for xwiki 9?
+  #macro (t $name)
+    $services.localization.render(["${translationPrefix}${name}", "${myTranslationPrefix}${name}"])
+  #end
+
+  ## tp: shorthand for translation with parameters
+  #macro (tp $name $params)
+    #set ($msg = $services.localization.render(["${translationPrefix}${name}",
+      "${myTranslationPrefix}${name}"],$params))
+    ## convert to <a href="link">link-text</a> for the simple wiki syntax of links
+    $stringtool.replacePattern($msg, '\[\[([^>]*)>>([^\]]*)\]\]', '<a href="$2">$1</a>')
+  #end
+
+  ## displayInput: displays the form element of the relevant property of the object having removed the
+  ##   html macro around it.
+  #macro (displayInput $property $obj)
+    #set ($output = $doc.display($property, 'edit', $obj))
+    #set ($output = $stringtool.removeStart($output, '{{html clean="false" wiki="false"}}'))
+    #set ($output = $stringtool.removeEnd($output, '{{/html}}'))
+    $output
+  #end
+
+  #set($hasLoadedMacros=true)
+#end
+{{/velocity}}

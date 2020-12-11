@@ -1,0 +1,118 @@
+{{velocity}}{{html clean="false" wiki="false"}}<!-- this is IdentityOAuth -->
+#set ($mainReference = $services.model.createDocumentReference('', 'IdentityOAuth', 'WebPreferences'))
+#if ($xcontext.getAction()=="login" && $doc.fullName=="XWiki.XWikiLogin")
+  #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
+  <!-- identityOAuth installed but not licensed. -->
+  #else
+    #set($identityOAuth = $services.idoauth)$identityOAuth.init()
+    #if ($identityOAuth.doesDetectReturn())
+    <!-- === IdentityOAuth: return of the OAuth bounce; if all goes well, the user can be logged in === -->
+      #set($result = $identityOAuth.processOAuthReturn())
+      #set($prfx = "failed login:")
+      #if ($result.startsWith($prfx))
+        #set($email = $result.substring($prfx.length()))
+        #set($errorMsg = " ${services.localization.render('idoauth.login.domainerror1')} ")
+        #set($errorMsg = " ${errorMsg} ${services.localization.render('idoauth.login.domainerror2')} $!{email}.")
+        #set($errorMsg = " ${errorMsg} ${services.localization.render('idoauth.login.domainerror3')}")
+      #elseif ($result=="ok")
+        #set($successM = ${services.localization.render("idoauth.login.redirectmessage")})
+        ## the browser should have been redirected by processOAuthReturn
+      #else ## $result is "no user"
+        #set($errorMsg = ${services.localization.render('idoauth.login.message')})
+        #set($errorMsg = " ${errorMsg} ${services.localization.render('idoauth.login.error')}")
+      #end
+    #elseif ($request.identityOAuth == "start")
+    <!-- ==== IdentityOAuth Start login, should bounce to the provider === -->
+      #set($succesMsg = $services.localization.render("idoauth.login.oauth.message"))
+      #set($success = $identityOAuth.processOAuthStart()) <!-- processOAuthStart: $success -->
+      #if($success)
+        #if($request.state)
+          #set($successMsg = $services.localization.render("idoauth.login.oauth.successwithredirect"))
+        #else
+          #set($successMsg = $services.localization.render("idoauth.login.oauth.success"))
+        #end
+      #else
+        #set($errorMsg = $services.localization.render("idoauth.login.oauth.failedOAuth"))
+      #end
+    #else
+    <!-- no such identityOAuth operation "$request.identityOAuth" -->
+    #end
+
+    #if ($successMsg || $errorMsg)
+    <!-- ==== Identity OAuth Login Extension: Success or warning messages ==== -->
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var p = document.createElement("p"), div = document.createElement("div");
+          #if ($successMsg)
+              p.innerText = "${escapetool.javascript($successMsg)}";
+              div.className = "box successmessage";
+          #elseif ($errorMsg)
+              p.innerText = "${escapetool.javascript($errorMsg)}";
+              div.className = "box warningmessage";
+          #end
+            div.appendChild(p);
+            var c = document.getElementById("mainContentArea")
+            c.insertBefore(div, c.firstChild);
+        });
+    </script>
+    #else
+    <!-- ==== Identity OAuth Login Extension: Button: offer a button to go to the provider) ==== -->
+    <script type="text/javascript">
+
+        document.addEventListener('DOMContentLoaded', function() {
+            require(['jquery', 'xwiki-events-bridge', 'xwiki-meta'], function($, xm) {
+                window.loginWithXWiki = function() {
+                    jQuery(".panel .panel-body dl").show()
+                    return false;
+                }
+                if (XWiki.contextaction == "login" || XWiki.contextaction == "loginsubmit" ) {
+                    var url = location.href, baseUrl = url;
+                    if (url.indexOf('?') < 0){
+                        url=url+'?';
+                    } else {
+                        baseUrl = url.substring(0, url.indexOf('?'));
+                    }
+                    if (url.indexOf('identityOAuth=')>=0) {
+                        url = url.replace(/identityOAuth=[a-zA-Z]*/, "identityOAuth=start");
+                    } else {
+                        url = url + "&identityOAuth=start";
+                    }
+                    url = url + "&browserLocation=" + escape(baseUrl);
+
+
+
+                    #set($t = '<div id="idoauth-login-choice">
+                             <div class="col-xs-12" style="margin-bottom: 20px; padding: 20px;">');
+
+                  #set($started = false)
+                  #foreach($loginCode in $identityOAuth.renderLoginCodes())
+                    ## intermediate spacing
+                    #if($started)#set($t = "${t}<div class='col-xs-12'>&nbsp;</div>")#end
+                    #set($started = true)
+                    #if("XWikiLogin" == $loginCode)
+                      #set($xwikiLogoUrl = $xwiki.getDocument("IdentityOAuth.WebHome").getAttachmentURL("xwiki-logo.png"))
+                      #set($t= "${t}<a href='javascript:void(0)' ##
+                                       onclick='return loginWithXWiki()' class='btn btn-primary col-xs-12' ##
+                                       style='text-align:left; background: white; color: #808080; ##
+                            font-weight:bold; border: #808080 2px solid;'>##
+                          <img src='${xwikiLogoUrl}'
+                               style='height:1.2em; margin-bottom:0.1em'>&nbsp;&nbsp;${services.localization.render('idoauth.login.withxwiki')}</a>")
+                    #else
+                      #set($t="${t}${loginCode}")
+                    #end
+                  #end
+                  #set($t="${t}</div><div style='clear: both;'></div></div>")
+                var loginCode = "${escapetool.javascript($t)}";
+                loginCode = loginCode.replace("-URL-",url);
+                jQuery(loginCode).insertBefore(jQuery(".panel .panel-body dl"));
+                if (XWiki.contextaction != "loginsubmit") {
+                jQuery(".panel .panel-body dl").hide();
+                }
+                }
+                }); // end requirejs
+                });
+    </script>
+    #end ## if ($successMsg || $errorMsg)
+  #end ## identityOAuth is active
+#end ## on login page
+{{/html}}{{/velocity}}
