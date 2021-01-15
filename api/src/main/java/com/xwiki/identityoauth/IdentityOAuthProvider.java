@@ -48,7 +48,7 @@ public interface IdentityOAuthProvider
      *                  secret: A string representing the API client's authorization (obtained from the remote server)
      *                  scopes: A list of strings representing the authorizations asked for. If <code>null</code>
      *                  then the scope is limited to fetching a (verified) identity as returned by
-     *                    {@IdentityOAuthProvider.getMinimumScopes()}.
+     *                    {@link IdentityOAuthProvider#getMinimumScopes()}.
      *                  redirectUrl: external URL of the Login page as configured at the service (this value must
      *                  be fixed so as to insure a secure process.
      */
