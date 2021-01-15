@@ -120,7 +120,7 @@ public interface IdentityOAuthProvider
     /**
      * Allows to add provider-specific XWikiObjects to the user-object.
      *
-     * @param idDescription The object returned by {@link #fetchIdentityDetails(String}.
+     * @param idDescription The object returned by {@link #fetchIdentityDetails(String)}.
      * @param doc           The user-document where objects can be manipulated. This document will be saved thereafter.
      * @return true if the object was changed
      */
