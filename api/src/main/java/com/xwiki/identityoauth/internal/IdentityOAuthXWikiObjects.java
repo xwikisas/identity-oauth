@@ -369,6 +369,7 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
                     c.setName(o.getStringValue("providerName"));
                     c.setLoginCode(o.getStringValue("loginTemplate"));
                     c.setDocumentSyntax(doc.getSyntax());
+                    c.setConfigPage("configPage");
                     c.setOrderHint(o.getIntValue("orderHint"));
                     DocumentReference configDocRef = documentResolver.resolve(
                             o.getStringValue("configurationObjectsPage"));

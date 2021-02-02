@@ -222,7 +222,8 @@ public class IdentityOAuthManagerImpl
         List<ProviderConfig> providerConfigs = iox.loadProviderConfigs();
         providerConfigs.sort(new Comparator<ProviderConfig>()
         {
-            @Override public int compare(ProviderConfig o1, ProviderConfig o2)
+            @Override
+            public int compare(ProviderConfig o1, ProviderConfig o2)
             {
                 return Integer.compare(o1.getOrderHint(), o2.getOrderHint());
             }
@@ -230,13 +231,18 @@ public class IdentityOAuthManagerImpl
         int lastScore = Integer.MIN_VALUE;
         providersLoginCodes.clear();
         providersLoginCodesSyntax.clear();
+        providers.clear();
         for (ProviderConfig config : providerConfigs) {
             try {
                 IdentityOAuthProvider pr = componentManager.getInstance(
                         IdentityOAuthProvider.class, config.getName());
                 pr.setProviderName(config.getName());
+                pr.setConfigPage(config.getConfigPage());
                 pr.initialize(config.getConfig());
                 providers.put(config.getName(), pr);
+                if (!pr.isActive()) {
+                    continue;
+                }
                 // insert XWIKI at position zero
                 if (config.getOrderHint() > 0 && lastScore <= 0) {
                     providersLoginCodes.add(XWIKILOGIN);
@@ -297,6 +303,18 @@ public class IdentityOAuthManagerImpl
         rebuildProviders();
     }
 
+    private IdentityOAuthProvider getActiveProvider(String providerName)
+    {
+        IdentityOAuthProvider provider = providers.get(providerName);
+        if (provider == null) {
+            throw new IdentityOAuthException("Provider \"" + provider + "\" not found.");
+        }
+        if (!provider.isActive()) {
+            throw new IdentityOAuthException("The provider \"" + provider + "\" is inactive.");
+        }
+        return provider;
+    }
+
     /**
      * Uses the request and response objects to read the providerName and invoke the named provider to trigger the start
      * of an authorization dialog by redirecting the user to the authorization dialog. The browser will be taken back to
@@ -312,7 +330,7 @@ public class IdentityOAuthManagerImpl
             log.debug("OAuthStart.");
             HttpServletRequest request = xwikiContextProvider.get().getRequest();
             String providerName = request.getParameter(PROVIDER);
-            IdentityOAuthProvider provider = providers.get(providerName);
+            IdentityOAuthProvider provider = getActiveProvider(providerName);
             String oauthBackPage = request.getParameter("browserLocation");
             String redirectUrl = provider.getRemoteAuthorizationUrl(oauthBackPage);
 
@@ -347,7 +365,7 @@ public class IdentityOAuthManagerImpl
     }
 
     /**
-     * Inspects the request to detect if an OAuth return needs to be processed.
+     * Inspects the session to detect if an OAuth return needs to be processed.
      *
      * @return true if the relevant information (cookie, parameter, ...) is found.
      */
@@ -369,7 +387,7 @@ public class IdentityOAuthManagerImpl
             // collect provider-name (an OAuth return is single-use)
             String providerName = getSessionInfo().getProviderAuthorizationRunning();
             getSessionInfo().setProviderAuthorizationRunning(null);
-            IdentityOAuthProvider provider = providers.get(providerName);
+            IdentityOAuthProvider provider = getActiveProvider(providerName);
             String authorization =
                     provider.readAuthorizationFromReturn(xwikiContextProvider.get().getRequest().getParameterMap());
             Pair<String, Date> token = provider.createToken(authorization);
@@ -398,10 +416,16 @@ public class IdentityOAuthManagerImpl
         return "ok";
     }
 
-    @Override
-    public boolean hasSessionIdentityInfo(String provider)
+    /**
+     * Checks if an information is in the session for the provider.
+     *
+     * @param providerName the name of the provider
+     * @return true if a token can be read.
+     */
+    public boolean hasSessionIdentityInfo(String providerName)
     {
-        return getSessionInfo().getAuthorizationCode(provider) != null;
+        IdentityOAuthProvider prov = getActiveProvider(providerName);
+        return getSessionInfo().getAuthorizationCode(providerName) != null;
     }
 
     private IdentityOAuthSessionInfo getSessionInfo()
@@ -409,10 +433,34 @@ public class IdentityOAuthManagerImpl
         return IdentityOAuthSessionInfo.getFromSession(xwikiContextProvider.get().getRequest());
     }
 
-    @Override
+    /**
+     * Receives the named provider even if inactive. This method can only be called when in the /admin/ action and is
+     * meant for the administration configuration.
+     *
+     * @param name the name of the provider as return by {@link IdentityOAuthProvider#getProviderName()} and contained
+     *             in the OAuthProviderClass.
+     * @return The named provider, as configured.
+     */
     public IdentityOAuthProvider getProvider(String name)
     {
+        if (!"admin".equals(xwikiContextProvider.get().getAction())) {
+            throw new IllegalStateException("This method is for the admin editing");
+        }
         return providers.get(name);
+    }
+
+    /**
+     * Launches a request for the user-specific token.
+     *
+     * @param providerName The name of the provider for which the token should be searched for.
+     */
+    public void requestCurrentToken(String providerName)
+    {
+        IdentityOAuthProvider provider = providers.get(providerName);
+        if (provider == null) {
+            return;
+        }
+        provider.receiveFreshToken(getSessionInfo().getAuthorizationCode(providerName));
     }
 
     enum LifeCycle

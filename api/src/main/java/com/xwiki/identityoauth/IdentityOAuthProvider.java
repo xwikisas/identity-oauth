@@ -55,6 +55,12 @@ public interface IdentityOAuthProvider
     void initialize(Map<String, String> config);
 
     /**
+     * @return true if the configuration (and possibly other conditions) make it possible for this provider
+     *         to be active and thus presented to the user. This flag is read at initialization.
+     */
+    boolean isActive();
+
+    /**
      * @return the short-name of this provider to match UI values
      */
     String getProviderName();
@@ -125,6 +131,20 @@ public interface IdentityOAuthProvider
      * @return true if the object was changed
      */
     boolean enrichUserObject(IdentityDescription idDescription, XWikiDocument doc);
+
+    /**
+     * Receives the token in the session after a call to {@link IdentityOAuthManager#requestCurrentToken(String)}.
+     *
+     * @param token the token stored in the session
+     */
+    void receiveFreshToken(String token);
+
+    /**
+     * Gets the reference configuration.
+     *
+     * @param page The reference string to the XWiki page containin the configuration object(s).
+     */
+    void setConfigPage(String page);
 
     /**
      * An object view on the information fetched from the OAuth service.

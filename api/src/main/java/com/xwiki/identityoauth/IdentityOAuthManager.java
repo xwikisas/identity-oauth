@@ -97,4 +97,14 @@ public interface IdentityOAuthManager
      * @return true if the relevant information (cookie, parameter, ...) is found.
      */
     boolean doesDetectReturn();
+
+
+    /**
+     * Launches a request for the user-specific token.
+     *
+     * @param providerName The name of the provider for which the token should be searched for.
+     */
+    void requestCurrentToken(String providerName);
+
+
 }

@@ -56,6 +56,21 @@
     <defaultWeb/>
     <nameField/>
     <validationScript/>
+    <active>
+      <customDisplay/>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <hint/>
+      <name>active</name>
+      <number>9</number>
+      <prettyName>active</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </active>
     <loginTemplate>
       <contenttype>---</contenttype>
       <customDisplay/>
@@ -107,7 +122,7 @@
       <customDisplay/>
       <defaultValue/>
       <disabled>0</disabled>
-      <displayType>select</displayType>
+      <displayType>input</displayType>
       <freeText/>
       <hint/>
       <idField/>

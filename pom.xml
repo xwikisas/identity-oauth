@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.xwiki.parent</groupId>
         <artifactId>xwikisas-parent-platform</artifactId>
-        <version>9.11-5</version>
+        <version>10.8</version>
     </parent>
     <groupId>com.xwiki.identity-oauth</groupId>
     <artifactId>identity-oauth-parent</artifactId>
@@ -41,7 +41,7 @@
     <scm>
         <connection>scm:git:git://github.com/xwikisas/identity-oauth.git</connection>
         <developerConnection>scm:git:git@github.com:xwikisas/identity-oauth.git</developerConnection>
-        <url>https://github.com/xwikisas/identity-oauth/tree/master</url>
+        <url>scm:https://github.com/xwikisas/identity-oauth/tree/master</url>
         <tag>HEAD</tag>
     </scm>
     <modules>

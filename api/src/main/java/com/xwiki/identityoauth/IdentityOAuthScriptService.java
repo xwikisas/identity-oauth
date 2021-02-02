@@ -49,7 +49,9 @@ public class IdentityOAuthScriptService implements ScriptService
     @Inject
     private Provider<XWikiContext> contextProvider;
 
-    /** Performs the necessary initialization if not yet done.
+    /**
+     * Performs the necessary initialization if not yet done.
+     *
      * @since 1.0
      */
     @Unstable
@@ -104,9 +106,6 @@ public class IdentityOAuthScriptService implements ScriptService
      */
     public IdentityOAuthProvider getProvider(String name)
     {
-        if (!"admin".equals(contextProvider.get().getAction())) {
-            throw new IllegalStateException("This method is for the admin editing");
-        }
         return manager.getProvider(name);
     }
 
@@ -125,5 +124,8 @@ public class IdentityOAuthScriptService implements ScriptService
      *
      * @return true if the relevant information (cookie, parameter, ...) is found.
      */
-    public boolean doesDetectReturn() { return manager.doesDetectReturn(); }
+    public boolean doesDetectReturn()
+    {
+        return manager.doesDetectReturn();
+    }
 }

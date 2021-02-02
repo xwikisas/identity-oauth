@@ -29,6 +29,8 @@ class ProviderConfig
 
     private String loginCode;
 
+    private String configPage;
+
     private Syntax documentSyntax;
 
     private int orderHint;
@@ -84,4 +86,8 @@ class ProviderConfig
     {
         this.documentSyntax = documentSyntax;
     }
+
+    public String getConfigPage() { return configPage; }
+
+    public void setConfigPage(String page) { this.configPage = page;}
 }

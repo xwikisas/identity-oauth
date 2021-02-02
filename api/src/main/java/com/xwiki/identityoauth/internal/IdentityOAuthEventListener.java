@@ -81,7 +81,9 @@ public class IdentityOAuthEventListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        log.debug("Event! " + event + " from " + source);
+        if(log.isDebugEnabled()) {
+            log.debug("Event! " + event + " from " + source);
+        }
         boolean applicationStarted = false;
         boolean configChanged = false;
         if (event instanceof ApplicationReadyEvent) {

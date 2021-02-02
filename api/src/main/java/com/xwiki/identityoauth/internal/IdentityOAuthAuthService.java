@@ -20,6 +20,7 @@
 package com.xwiki.identityoauth.internal;
 
 import java.net.URLEncoder;
+import java.security.Principal;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
@@ -27,6 +28,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.securityfilter.realm.SimplePrincipal;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
@@ -41,8 +43,8 @@ import com.xpn.xwiki.user.impl.xwiki.XWikiAuthServiceImpl;
 import com.xpn.xwiki.web.XWikiRequest;
 
 /**
- * An authenticator that can include a negotiation with remote Clouds services. This authenticator is
- * created, configured and maintained by the IdentityOAuthScriptService.
+ * An authenticator that can include a negotiation with remote Clouds services. This authenticator is created,
+ * configured and maintained by the IdentityOAuthScriptService.
  *
  * @version $Id$
  * @since 1.0
@@ -96,20 +98,46 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
                 log.info("cleared cookie");
                 return null;
             }
-
-            // TODO: add cookies
-            String userToLogin = sessionInfo.getUserToLogIn();
-            if (userToLogin != null) {
-                log.debug("User to login found.");
-                XWikiUser user = new XWikiUser(userToLogin);
-                sessionInfo.setUserToLogIn(null);
-                return user;
-            } else {
-                return super.checkAuth(context);
-            }
+            return super.checkAuth(context);
         } catch (Exception e) {
             e.printStackTrace();
             throw new XWikiException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Processes a password entry and creates the appropriate principal.
+     *
+     * @param username the provided user-name
+     * @param password the provided password (ignored)
+     * @param context  the context describing the request
+     * @return a null Principal Object if the user hasn't been authenticated or a valid Principal Object if the user is
+     * correctly authenticated
+     * @throws XWikiException if something goes wrong.
+     */
+    public Principal authenticate(String username, String password, XWikiContext context) throws XWikiException
+    {
+        IdentityOAuthSessionInfo sessionInfo = IdentityOAuthSessionInfo.getFromSession(context.getRequest());
+        try {
+            log.debug("authenticate");
+            // TODO: use cookies if opted-in for
+            String userToLogin = sessionInfo.getUserToLogIn();
+            if (userToLogin != null) {
+                log.debug("User to login found.");
+                sessionInfo.setUserToLogIn(null);
+                if (!userToLogin.startsWith(XWIKISPACE)) {
+                    userToLogin = XWIKISPACE + userToLogin;
+                }
+                log.debug("Authenticating user " + userToLogin);
+                return new SimplePrincipal(userToLogin);
+            } else {
+                log.debug("attempt default authenticate method for user : " + username);
+                return super.authenticate(username, password, context);
+            }
+        } catch (Exception ex) {
+            XWikiException e =  new XWikiException("Trouble at authenticating", ex);
+            log.warn("Trouble at authenticating.", e);
+            throw e;
         }
     }
 
