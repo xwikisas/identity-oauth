@@ -87,7 +87,13 @@ class ProviderConfig
         this.documentSyntax = documentSyntax;
     }
 
-    public String getConfigPage() { return configPage; }
+    public String getConfigPage()
+    {
+        return configPage;
+    }
 
-    public void setConfigPage(String page) { this.configPage = page;}
+    public void setConfigPage(String page)
+    {
+        this.configPage = page;
+    }
 }
