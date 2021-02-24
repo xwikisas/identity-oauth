@@ -4,7 +4,7 @@
   #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   <!-- identityOAuth installed but not licensed. -->
   #else
-    #set($identityOAuth = $services.idoauth)$identityOAuth.init()
+    #set($identityOAuth = $services.idoauth)
     #if ($identityOAuth.doesDetectReturn())
     <!-- === IdentityOAuth: return of the OAuth bounce; if all goes well, the user can be logged in === -->
       #set($result = $identityOAuth.processOAuthReturn())
@@ -20,6 +20,9 @@
       #else ## $result is "no user"
         #set($errorMsg = ${services.localization.render('idoauth.login.message')})
         #set($errorMsg = " ${errorMsg} ${services.localization.render('idoauth.login.error')}")
+        #if($request.getAttribute("idoauth-error-message"))
+          #set($errorMsg = "${errorMsg}: ${request.getAttribute('idoauth-error-message')}")
+        #end
       #end
     #elseif ($request.identityOAuth == "start")
     <!-- ==== IdentityOAuth Start login, should bounce to the provider === -->
@@ -34,7 +37,7 @@
       #else
         #set($errorMsg = $services.localization.render("idoauth.login.oauth.failedOAuth"))
       #end
-    #else
+    #elseif ($request.identityOAuth)
     <!-- no such identityOAuth operation "$request.identityOAuth" -->
     #end
 
@@ -84,11 +87,11 @@
                     #set($t = '<div id="idoauth-login-choice">
                              <div class="col-xs-12" style="margin-bottom: 20px; padding: 20px;">');
 
-                  #set($started = false)
+                  #set($count = 0)
                   #foreach($loginCode in $identityOAuth.renderLoginCodes())
                     ## intermediate spacing
-                    #if($started)#set($t = "${t}<div class='col-xs-12'>&nbsp;</div>")#end
-                    #set($started = true)
+                    #if($count > 0)#set($t = "${t}<div class='col-xs-12'>&nbsp;</div>")#end
+                    #set($count = 1+$count)
                     #if("XWikiLogin" == $loginCode)
                       #set($xwikiLogoUrl = $xwiki.getDocument("IdentityOAuth.WebHome").getAttachmentURL("xwiki-logo.png"))
                       #set($t= "${t}<a href='javascript:void(0)' ##
@@ -106,7 +109,9 @@
                 loginCode = loginCode.replace("-URL-",url);
                 jQuery(loginCode).insertBefore(jQuery(".panel .panel-body dl"));
                 if (XWiki.contextaction != "loginsubmit") {
-                jQuery(".panel .panel-body dl").hide();
+                #if ($count > 1)
+                  jQuery(".panel .panel-body dl").hide();
+                #end
                 }
                 }
                 }); // end requirejs

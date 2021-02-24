@@ -59,7 +59,7 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
     private Logger log;
 
     @Inject
-    private IdentityOAuthXWikiObjects gaXwikiObjects;
+    private Provider<IdentityOAuthSessionInfo> sessionInfoProvider;
 
     @Inject
     private CookieAuthenticationPersistence cookiePersistance;
@@ -90,7 +90,7 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
     {
         try {
             log.debug("checkAuth");
-            IdentityOAuthSessionInfo sessionInfo = IdentityOAuthSessionInfo.getFromSession(context.getRequest());
+            IdentityOAuthSessionInfo sessionInfo = sessionInfoProvider.get();
             if (isLogoutRequest(context)) {
                 log.info("caught a logout request");
                 cookiePersistance.clear();
@@ -117,7 +117,7 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
      */
     public Principal authenticate(String username, String password, XWikiContext context) throws XWikiException
     {
-        IdentityOAuthSessionInfo sessionInfo = IdentityOAuthSessionInfo.getFromSession(context.getRequest());
+        IdentityOAuthSessionInfo sessionInfo = sessionInfoProvider.get();
         try {
             log.debug("authenticate");
             // TODO: use cookies if opted-in for
@@ -135,7 +135,7 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
                 return super.authenticate(username, password, context);
             }
         } catch (Exception ex) {
-            XWikiException e =  new XWikiException("Trouble at authenticating", ex);
+            XWikiException e = new XWikiException("Trouble at authenticating", ex);
             log.warn("Trouble at authenticating.", e);
             throw e;
         }
@@ -153,14 +153,12 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
         boolean redirected = false;
         try {
             // TODO: revise this to create a user-to-login from the cookie infos
-            //  ... or the one below
-            String url = context.getWiki().getExternalURL("IdentityOAuth.Login", "view", context);
-            // gaXwikiObjects.doesUseCookies() && gaXwikiObjects.doesSkipLoginPage()
-            //if (true) {
-            log.info("skip the login page ");
+            String url = context.getWiki().getExternalURL("XWiki.XWikiLogin", "login", context);
             XWikiRequest request = context.getRequest();
             String userCookie = cookiePersistance.getUserId();
-            log.info("retrieved user from cookie : " + userCookie);
+            if (userCookie != null) {
+                log.info("retrieved user from cookie : " + userCookie);
+            }
             String savedRequestId = request.getParameter(
                     SavedRequestManager.getSavedRequestIdentifier());
             if (StringUtils.isEmpty(savedRequestId)) {

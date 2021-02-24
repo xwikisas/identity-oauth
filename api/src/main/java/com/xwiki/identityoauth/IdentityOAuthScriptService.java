@@ -23,14 +23,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
+import org.xwiki.security.authorization.ContextualAuthorizationManager;
+import org.xwiki.security.authorization.Right;
 import org.xwiki.stability.Unstable;
-
-import com.xpn.xwiki.XWikiContext;
 
 /**
  * Script service containing the methods used by the view files contained in the ui module.
@@ -47,18 +46,7 @@ public class IdentityOAuthScriptService implements ScriptService
     private IdentityOAuthManager manager;
 
     @Inject
-    private Provider<XWikiContext> contextProvider;
-
-    /**
-     * Performs the necessary initialization if not yet done.
-     *
-     * @since 1.0
-     */
-    @Unstable
-    public void init()
-    {
-        manager.init();
-    }
+    private ContextualAuthorizationManager authorizationManager;
 
     /**
      * Triggers a request to the identity provider and a redirect of the browser t the OAuth identity-provider's
@@ -100,12 +88,15 @@ public class IdentityOAuthScriptService implements ScriptService
     /**
      * Used by the admin UI to access the internal methods.
      *
-     * @param name the provider name as returned by {@link IdentityOAuthProvider#getProviderName()} and contained in the
+     * @param name the provider name as returned by {@link IdentityOAuthProvider#getProviderHint()} and contained in the
      *             OAuthProviderClass object.
      * @return the provider of the given name except if the action is not admin.
      */
     public IdentityOAuthProvider getProvider(String name)
     {
+        if (!authorizationManager.hasAccess(Right.ADMIN)) {
+            throw new IllegalStateException("This method is for the admin editing");
+        }
         return manager.getProvider(name);
     }
 

@@ -19,8 +19,7 @@
  */
 package com.xwiki.identityoauth.internal;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +33,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
@@ -108,30 +107,24 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
         return obj2 != null;
     }
 
-    String updateXWikiUser(IdentityOAuthProvider.IdentityDescription id, IdentityOAuthProvider provider)
+    String updateXWikiUser(IdentityOAuthProvider.IdentityDescription id, IdentityOAuthProvider provider, String token)
     {
         XWikiContext context = contextProvider.get();
         String xwikiUser = null;
         String currentWiki = context.getWikiId();
-        try {
-            // Force main wiki database to create the user as global
-            context.setMainXWiki(WIKINAME);
-            String email = id.emails.get(0);
-            List<Object> wikiUserList = findExistingUser(id.internalId, email);
+        // Force main wiki database to create the user as global
+        String email = id.emails.get(0);
+        List<Object> wikiUserList = findExistingUser(id.internalId, email);
 
-            if (wikiUserList == null || wikiUserList.size() == 0) {
-                xwikiUser = createUser(id.internalId, email, id.firstName, id.lastName, id.fetchedUserImage, context);
-            } else {
-                // user found.. we should update it if needed
-                xwikiUser = (String) (wikiUserList.get(0));
-                if (xwikiUser.startsWith(XWIKISPACE + '.')) {
-                    xwikiUser = xwikiUser.substring(XWIKISPACE.length() + 1);
-                }
-                updateUser(xwikiUser, id, provider, context);
+        if (wikiUserList == null || wikiUserList.size() == 0) {
+            xwikiUser = createUser(id, provider, token);
+        } else {
+            // user found.. we should update it if needed
+            xwikiUser = (String) (wikiUserList.get(0));
+            if (xwikiUser.startsWith(XWIKISPACE + '.')) {
+                xwikiUser = xwikiUser.substring(XWIKISPACE.length() + 1);
             }
-        } finally {
-            // Restore database
-            context.setMainXWiki(currentWiki);
+            updateUser(xwikiUser, id, provider, token);
         }
         return xwikiUser;
     }
@@ -156,11 +149,13 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
         }
     }
 
-    private String createUser(String remoteUserId,
-            String email, String firstName, String lastName, URL avatarUrl, XWikiContext context)
+    private String createUser(IdentityOAuthProvider.IdentityDescription id,
+            IdentityOAuthProvider provider, String token)
     {
         try {
             // user not found.. need to create new user
+            String email = id.emails.get(0);
+            XWikiContext context = contextProvider.get();
             String xwikiUser = email.substring(0, email.indexOf("@"));
             // make sure user is unique
             xwikiUser = context.getWiki().getUniquePageName(XWIKISPACE, xwikiUser, context);
@@ -172,36 +167,29 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
                             + Math.floor(Math.random() * Math.pow(10, 7))), 10);
             Map<String, String> userAttributes = new HashMap<>();
 
-            if (firstName != null) {
-                userAttributes.put(FIRSTNAME, firstName);
+            if (id.firstName != null) {
+                userAttributes.put(FIRSTNAME, id.firstName);
             }
-            if (lastName != null) {
-                userAttributes.put(LASTNAME, lastName);
+            if (id.lastName != null) {
+                userAttributes.put(LASTNAME, id.lastName);
             }
             userAttributes.put(EMAIL, email);
             userAttributes.put(PASSWORD, randomPassword);
-            int isCreated = context.getWiki().createUser(xwikiUser, userAttributes,
+            context.getWiki().createUser(xwikiUser, userAttributes,
                     userDirRef, null, null, "edit", context);
             // Add remote user id to the user
-            if (isCreated == 1) {
-                log.debug("Creating user " + xwikiUser);
-                XWikiDocument userDoc = context.getWiki()
-                        .getDocument(createUserReference(xwikiUser), context);
-                BaseObject userObj = userDoc.getXObject(getXWikiUserClassRef());
+            log.debug("Creating user " + xwikiUser);
+            XWikiDocument userDoc = context.getWiki()
+                    .getDocument(createUserReference(xwikiUser), context);
+            BaseObject userObj = userDoc.getXObject(getXWikiUserClassRef());
 
-                userObj.set(ACTIVE, 1, context);
-                if (avatarUrl != null) {
-                    fetchUserImage(userDoc, userObj, avatarUrl.toExternalForm());
-                }
+            userObj.set(ACTIVE, 1, context);
+            fetchUserImage(userDoc, userObj, id, provider, token);
 
-                userDoc.createXObject(getIdentitOAuthAuthClassName(), context);
-                BaseObject gAppsAuthClass = userDoc.getXObject(getIdentitOAuthAuthClassName());
-                gAppsAuthClass.set(EXTERNAL_PROVIDER_ID, remoteUserId, context);
-                context.getWiki().saveDocument(userDoc, "IdentityOAuth user creation", false, context);
-            } else {
-                log.warn("User creation failed");
-                xwikiUser = null;
-            }
+            userDoc.createXObject(getIdentitOAuthAuthClassName(), context);
+            BaseObject gAppsAuthClass = userDoc.getXObject(getIdentitOAuthAuthClassName());
+            gAppsAuthClass.set(EXTERNAL_PROVIDER_ID, id.internalId, context);
+            context.getWiki().saveDocument(userDoc, "IdentityOAuth user creation", false, context);
             return xwikiUser;
         } catch (Exception e) {
             throw new IdentityOAuthException(e);
@@ -211,11 +199,12 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
     private void updateUser(String xwikiUser,
             IdentityOAuthProvider.IdentityDescription id,
             IdentityOAuthProvider identityOAuthProvider,
-            XWikiContext context)
+            String token)
     {
 
         try {
             log.debug("Found user " + xwikiUser);
+            XWikiContext context = contextProvider.get();
             XWikiDocument userDoc = context.getWiki().getDocument(createUserReference(xwikiUser), context);
             BaseObject userObj = userDoc.getXObject(getXWikiUserClassRef());
             if (userObj == null) {
@@ -223,9 +212,11 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
                 return;
             }
 
-            boolean changed = updateBaseFields(userDoc, userObj, id, context);
+            boolean changed = updateBaseFields(userObj, id);
 
             changed = changed || getOrMakeIdentityObject(userDoc, id, context);
+
+            changed = changed || fetchUserImage(userDoc, userObj, id, identityOAuthProvider, token);
 
             changed = changed || identityOAuthProvider.enrichUserObject(id, userDoc);
 
@@ -241,19 +232,14 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
         }
     }
 
-    private boolean updateBaseFields(XWikiDocument userDoc, BaseObject userObj,
-            IdentityOAuthProvider.IdentityDescription id,
-            XWikiContext context) throws
-            XWikiException
+    private boolean updateBaseFields(BaseObject userObj,
+            IdentityOAuthProvider.IdentityDescription id)
     {
+        XWikiContext context = contextProvider.get();
         boolean changed = updateField(userObj, id.firstName, FIRSTNAME, context)
                 || updateField(userObj, id.lastName, LASTNAME, context);
         if (id.emails != null && id.emails.size() > 0) {
             changed = changed || updateField(userObj, id.emails.get(0), EMAIL, context);
-        }
-        if (id.fetchedUserImage != null) {
-            changed = changed || fetchUserImage(userDoc, userObj,
-                    id.fetchedUserImage.toExternalForm());
         }
         return changed;
     }
@@ -284,41 +270,41 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
     }
 
     private boolean fetchUserImage(XWikiDocument userDoc, BaseObject userObj,
-            String imgUrl)
+            IdentityOAuthProvider.IdentityDescription id,
+            IdentityOAuthProvider provider, String token)
     {
-        try {
-            if (imgUrl != null) {
-                String imageUrl = imgUrl
-                        + (imgUrl.indexOf('?') > -1 ? "&" : '?')
-                        + "sz=512";
-                XWikiAttachment attachment =
-                        userObj.getStringValue(AVATAR) == null ? null
-                                : userDoc.getAttachment(userObj.getStringValue(AVATAR));
-                java.net.URL u = new URL(imageUrl);
-                HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-
-                if (attachment != null) {
-                    conn.addRequestProperty("If-Modified-Since",
-                            DateUtil.formatDate(attachment.getDate()));
-                }
-
-                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    XWikiContext context = contextProvider.get();
-                    log.debug("Pulling avatar " + imageUrl);
-
-                    String fileName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
-                    if (fileName.contains("?")) {
-                        fileName = fileName.substring(0, fileName.indexOf('?'));
-                    }
-                    log.debug("Avatar changed " + fileName);
-                    userObj.set(AVATAR, fileName, context);
-                    userDoc.addAttachment(fileName, conn.getInputStream(), context).setDate(
-                            new Date(conn.getLastModified()));
-                    return true;
-                }
+        String fileName = userObj.getStringValue(AVATAR);
+        Date lastModified = null;
+        if (fileName != null && fileName.length() > 0) {
+            XWikiAttachment attachment = userDoc.getAttachment(fileName);
+            if (attachment != null) {
+                // randomise modification date 15 minutes before so as to prevent tracing by caching
+                lastModified = new Date((int) (attachment.getDate().getTime()
+                        - 1000 * Math.floor(Math.random() * 15 * 60)));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        }
+        Triple<InputStream, String, String> triple = provider.fetchUserImage(lastModified, id, token);
+        if (triple != null && triple.getLeft() != null) {
+            try {
+                log.debug("Obtained user-image: " + triple.getLeft());
+                fileName = triple.getRight();
+                String mediaType = triple.getMiddle();
+                if (fileName == null) {
+                    if ("image/jpeg".equals(mediaType)) {
+                        fileName = "image.jpeg";
+                    } else if ("image/png".equals(mediaType)) {
+                        fileName = "image.png";
+                    } else {
+                        throw new IllegalStateException("Unsupported avatar picture type \"" + mediaType + "\".");
+                    }
+                }
+                log.debug("Avatar changed " + fileName);
+                userObj.set(AVATAR, fileName, contextProvider.get());
+                userDoc.addAttachment(fileName, triple.getLeft(), contextProvider.get());
+                return true;
+            } catch (Exception e) {
+                throw new IdentityOAuthException("Trouble at fetching user-image.", e);
+            }
         }
         return false;
     }
@@ -366,7 +352,7 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
                 BaseObject o = doc.getXObject(getProviderConfigRef(), false, contextProvider.get());
                 if (o.getIntValue(ACTIVE) != 0) {
                     ProviderConfig c = new ProviderConfig();
-                    c.setName(o.getStringValue("providerName"));
+                    c.setName(o.getStringValue("providerHint"));
                     c.setLoginCode(o.getStringValue("loginTemplate"));
                     c.setDocumentSyntax(doc.getSyntax());
                     c.setConfigPage("configPage");

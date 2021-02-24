@@ -26,9 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 /**
  * Data object class meant to store short-term user authorization (tokens and authorization-code) for the OAuth provider
  * within the user-session.
@@ -51,18 +48,6 @@ class IdentityOAuthSessionInfo implements Serializable
 
     private String xredirect;
 
-    static IdentityOAuthSessionInfo getFromSession(HttpServletRequest request)
-    {
-        String sessKey = IdentityOAuthSessionInfo.class.getName();
-        HttpSession session = request.getSession();
-        IdentityOAuthSessionInfo si = (IdentityOAuthSessionInfo) session.getAttribute(sessKey);
-        if (si == null) {
-            si = new IdentityOAuthSessionInfo();
-            session.setAttribute(sessKey, si);
-        }
-        return si;
-    }
-
     public String getProviderAuthorizationRunning()
     {
         return providerAuthorizationRunning;
@@ -71,11 +56,6 @@ class IdentityOAuthSessionInfo implements Serializable
     public void setProviderAuthorizationRunning(String providerAuthorizationRunning)
     {
         this.providerAuthorizationRunning = providerAuthorizationRunning;
-    }
-
-    public static boolean hasSessionIdentityInfo(String provider, HttpServletRequest request)
-    {
-        return getFromSession(request).tokens.containsKey(provider);
     }
 
     void clear(String provider)

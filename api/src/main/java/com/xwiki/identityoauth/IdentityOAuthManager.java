@@ -34,14 +34,6 @@ import org.xwiki.stability.Unstable;
 @Role
 public interface IdentityOAuthManager
 {
-    /**
-     * Makes sure all the states are initialized.
-     *
-     * @throws IdentityOAuthException in case the configuration fails to load
-     * @since 1.0
-     */
-    @Unstable
-    void init() throws IdentityOAuthException;
 
     /**
      * Called by the request for login page to start an OAuth authorization dialog.
@@ -76,7 +68,7 @@ public interface IdentityOAuthManager
     boolean hasSessionIdentityInfo(String provider);
 
     /**
-     * @param name the name of the provider as return by {@link IdentityOAuthProvider#getProviderName()} and contained
+     * @param name the name of the provider as return by {@link IdentityOAuthProvider#getProviderHint()} and contained
      *             in the OAuthProviderClass.
      * @return the provider object.
      */
@@ -102,9 +94,9 @@ public interface IdentityOAuthManager
     /**
      * Launches a request for the user-specific token.
      *
-     * @param providerName The name of the provider for which the token should be searched for.
+     * @param providerHint The name of the provider for which the token should be searched for.
      */
-    void requestCurrentToken(String providerName);
+    void requestCurrentToken(String providerHint);
 
 
 }

@@ -42,50 +42,6 @@
                     <groupId>org.json</groupId>
                     <artifactId>json</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.platform</groupId>
-                    <artifactId>xwiki-platform-security-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.commons</groupId>
-                    <artifactId>xwiki-commons-cache-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.commons</groupId>
-                    <artifactId>xwiki-commons-environment-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.commons</groupId>
-                    <artifactId>xwiki-commons-logging-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.commons</groupId>
-                    <artifactId>xwiki-commons-crypto-pkix</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.commons</groupId>
-                    <artifactId>xwiki-commons-crypto-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.commons</groupId>
-                    <artifactId>xwiki-commons-extension-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.commons</groupId>
-                    <artifactId>xwiki-commons-velocity</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.platform</groupId>
-                    <artifactId>xwiki-platform-rendering-transformation-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.platform</groupId>
-                    <artifactId>xwiki-platform-refactoring-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.xwiki.platform</groupId>
-                    <artifactId>xwiki-platform-job-script</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -114,6 +70,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>2.11.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xwiki.platform</groupId>
+            <artifactId>xwiki-platform-security-api</artifactId>
+            <version>9.11</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

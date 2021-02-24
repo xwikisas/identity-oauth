@@ -19,12 +19,13 @@
  */
 package com.xwiki.identityoauth;
 
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.xwiki.component.annotation.Role;
 
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -41,36 +42,35 @@ public interface IdentityOAuthProvider
     /**
      * Configures the object according to the data.
      *
-     * @param config    A map to hold each configuration collected from the configuration page's object-properties.
-     *                  Among others, the following properties are expected:
-     *
-     *                  clientId: A string representing the API client (obtained from the remote server)
-     *                  secret: A string representing the API client's authorization (obtained from the remote server)
-     *                  scopes: A list of strings representing the authorizations asked for. If <code>null</code>
-     *                  then the scope is limited to fetching a (verified) identity as returned by
-     *                    {@link IdentityOAuthProvider#getMinimumScopes()}.
-     *                  redirectUrl: external URL of the Login page as configured at the service (this value must
-     *                  be fixed so as to insure a secure process.
+     * @param config A map to hold each configuration collected from the configuration page's object-properties. Among
+     *               others, the following properties are expected:
+     *               <p>
+     *               clientId: A string representing the API client (obtained from the remote server) secret: A string
+     *               representing the API client's authorization (obtained from the remote server) scopes: A list of
+     *               strings representing the authorizations asked for. If <code>null</code> then the scope is limited
+     *               to fetching a (verified) identity as returned by {@link IdentityOAuthProvider#getMinimumScopes()}.
+     *               redirectUrl: external URL of the Login page as configured at the service (this value must be fixed
+     *               so as to insure a secure process.
      */
     void initialize(Map<String, String> config);
 
     /**
-     * @return true if the configuration (and possibly other conditions) make it possible for this provider
-     *         to be active and thus presented to the user. This flag is read at initialization.
+     * @return true if the configuration (and possibly other conditions) make it possible for this provider to be active
+     * and thus presented to the user. This flag is read at initialization.
      */
     boolean isActive();
 
     /**
      * @return the short-name of this provider to match UI values
      */
-    String getProviderName();
+    String getProviderHint();
 
     /**
      * Defines the name extracted from the configuration object.
      *
-     * @param name The name used various url-parameters.
+     * @param hint The name used various url-parameters.
      */
-    void setProviderName(String name);
+    void setProviderHint(String hint);
 
     /**
      * Verifies the assigned configuration in an automatic fashion. For use by the administration UI.
@@ -81,7 +81,7 @@ public interface IdentityOAuthProvider
     String validateConfiguration();
 
     /**
-     *  For use by the administration UI.
+     * For use by the administration UI.
      *
      * @return The minimum set of scopes of this provider so as to be able to provide any authorization form and, thus,
      * involves identifying the user.
@@ -122,6 +122,16 @@ public interface IdentityOAuthProvider
      * @return A decoding of the identity resource
      */
     IdentityDescription fetchIdentityDetails(String token);
+
+    /**
+     * Opens the stream of the user image file if it was modified later than the given date.
+     *
+     * @param ifModifiedSince Only fetch the file if it is modified after this date.
+     * @param id              the currently collected identity-description.
+     * @param token           the currently valid token.
+     * @return A triple made of inputstream, media-type, and possibly guessed filename.
+     */
+    Triple<InputStream, String, String> fetchUserImage(Date ifModifiedSince, IdentityDescription id, String token);
 
     /**
      * Allows to add provider-specific XWikiObjects to the user-object.
@@ -174,6 +184,6 @@ public interface IdentityOAuthProvider
         /**
          * A URL where to fetch the user-image.
          */
-        public URL fetchedUserImage;
+        public String userImageUrl;
     }
 }

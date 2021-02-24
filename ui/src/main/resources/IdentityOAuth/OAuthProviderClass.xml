@@ -102,20 +102,20 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
     </orderHint>
-    <providerName>
+    <providerHint>
       <customDisplay/>
       <disabled>0</disabled>
       <hint/>
-      <name>providerName</name>
+      <name>providerHint</name>
       <number>1</number>
       <picker>1</picker>
-      <prettyName>providerName</prettyName>
+      <prettyName>providerHint</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-    </providerName>
+    </providerHint>
     <configurationObjectsPage>
       <cache>0</cache>
       <classname/>

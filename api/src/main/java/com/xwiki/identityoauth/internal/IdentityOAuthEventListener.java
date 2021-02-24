@@ -27,6 +27,7 @@ import org.xwiki.bridge.event.ApplicationReadyEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.observation.AbstractEventListener;
+import org.xwiki.observation.EventListener;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -38,9 +39,9 @@ import com.xwiki.identityoauth.IdentityOAuthManager;
  * @version $Id$
  * @since 1.0
  */
-@Component(roles = IdentityOAuthEventListener.class)
+@Component
 @Singleton
-public class IdentityOAuthEventListener extends AbstractEventListener
+public class IdentityOAuthEventListener extends AbstractEventListener implements EventListener
 {
     @Inject
     private IdentityOAuthXWikiObjects ioXWikiObjects;

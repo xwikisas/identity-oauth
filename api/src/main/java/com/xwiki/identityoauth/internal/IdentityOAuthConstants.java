@@ -108,7 +108,6 @@ public interface IdentityOAuthConstants
      * externalProviderId.
      */
     String EXTERNAL_PROVIDER_ID = "externalProviderId";
-
     /**
      * OAUTH_RETURN.
      */

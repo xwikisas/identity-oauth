@@ -5,7 +5,7 @@
 ## - this page should be included with #includeInContext("IdentityOAuth.IdentityOAuthConfigMacros")
 ##   so that it defines a few useful constants which you can use, includes javascript and stylesheee
 ##   extensions. The macros it defines should be called after all necessary variables are defined,
-##   notably oauthProviderName.
+##   notably oauthProviderHint.
 ## lets the JavaScript and CSS extensions be loaded
 #set ($mainReference = $services.model.createDocumentReference('', 'IdentityOAuth', 'WebPreferences'))
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
@@ -19,7 +19,7 @@
 
 
   ## defines formId, propNamePrefixIO, propNamePrefixO, configDoc, objIO, objO
-  #macro (initConfigObjects $configDocName $classNameO $translationPfx)
+  #macro (initConfigObjects $configDocName $extraObjectClassPropPrefixes $translationPrefixP)
     #set($formId = "${section.toLowerCase()}_${configDocName1}")
     #set($configDoc = $xwiki.getDocument($configDocName))
 
@@ -27,10 +27,11 @@
     #set($propNamePrefixIO="${configDoc.fullName}_${classNameIO}_0")
     #set($objIO = $configDoc.getObject($classNameIO))
 
-    #set($propNamePrefixO="${configDoc.fullName}_${classNameO}_0")
-    #set($objO = $configDoc.getObject($classNameO))
-
-    #set($translationPrefix = $translationPfx)
+    #set($translationPrefix = $translationPrefixP)
+    #foreach($x in $extraObjectClassPropPrefixes)
+      #set($shhh = $x.add($x[0]))
+      #set($x[0] = $configDoc.getObject($x[0]))
+    #end
   #end
 
 
