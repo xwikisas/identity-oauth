@@ -42,11 +42,11 @@
   #end
 
   ## tp: shorthand for translation with parameters
-  #macro (tp $name $params)
+  #macro (tp $name $params)##
     #set ($msg = $services.localization.render(["${translationPrefix}${name}",
-      "${myTranslationPrefix}${name}"],$params))
+      "${myTranslationPrefix}${name}"],$params))##
     ## convert to <a href="link">link-text</a> for the simple wiki syntax of links
-    $stringtool.replacePattern($msg, '\[\[([^>]*)>>([^\]]*)\]\]', '<a href="$2">$1</a>')
+    $stringtool.replacePattern($msg, '\[\[([^>]*)>>([^\]]*)\]\]', '<a href="$2">$1</a>')##
   #end
 
   ## displayInput: displays the form element of the relevant property of the object having removed the
@@ -56,6 +56,34 @@
     #set ($output = $stringtool.removeStart($output, '{{html clean="false" wiki="false"}}'))
     #set ($output = $stringtool.removeEnd($output, '{{/html}}'))
     $output
+  #end
+
+  #macro (renderRedirectUrlInputAndHints)
+    #displayInput ('redirectUrl', $objIO)<br/>
+    <span class="xHint" id="redirectUrlAsExpected">#t('redirectUrl.asExpected')</span>
+    <span class="xHint" id="redirectUrlAsServers">#t('redirectUrl.asExpectedServers')</span>
+    <span class="xHint" id="redirectUrlAsBrowsers">#t('redirectUrl.asExpectedBrowsers')</span>
+    <span class="xHint" id="redirectUrlDifferentOfAll">#t('redirectUrl.notAsExpectedAny')</span>
+    <span class="xHint" id="redirectMakeItLikePredicted">##
+      (<a href="#" onclick="return resetRedirectUrlBrowser()">#t('redirectUrl.recalc.predicted'))</a></span>
+    <span class="xHint" id="redirectMakeItLikePredictedBrowser">##
+      (<a href="#" onclick="return resetRedirectUrlBrowser()">#t('redirectUrl.recalc.browser'))</a></span>
+    <span class="xHint" id="redirectMakeItLikePredictedServer">
+      (<a href="#" onclick="return resetRedirectUrlServer()">#t('redirectUrl.recalc.server'))</a></span>
+  #end
+
+  #macro (calcReturnUrlsJS)
+  <script type="text/javascript">
+      #set($serverReturn=$xwiki.getURL('XWiki.XWikiLogin', 'login')) ## typically a host-absolute URL
+      var a = document.createElement('a'); a.href= "${serverReturn}";
+      window.serverReturnUrl = a.href;
+      window.placeHolderForRedirectUrl = '#tp("redirectUrl.placeHolderMessage", ["==**==****==="])';
+      window.placeHolderForRedirectUrl = window.placeHolderForRedirectUrl.replace("==**==****===",a.href);
+      var p = window.location.href.indexOf('/admin');
+      window.browserReturnUrl = (p == -1 ?
+              window.location.href :
+              window.location.href.substring(0, p)) + "/login/XWiki/XWikiLogin"
+  </script>
   #end
 
   #set($hasLoadedMacros=true)

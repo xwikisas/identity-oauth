@@ -74,21 +74,61 @@ require(['jquery'], function (jQuery) {
   }
 
   var redirectUrlInput;
-  var p = window.location.href.indexOf('/admin');
-  var targetRedirectUrl = (p == -1 ?
-      window.location.href :
-      window.location.href.substring(0, p)) + "/login/XWiki/XWikiLogin"
+  // note: see macro calcRedirectUrlsJS() which calculates browser's and server's return URLs
+  // defining serverReturnUrl, browserReturnUrl at the window
+  // in some proxy cases the browser and server calculated URLs are not the same
+  // because consistency for the return URL is primordial for OAuth, a possibility to adjust this URL
+  // is provided.
 
-  function resetRedirectUrl()
-  {
-    redirectUrlInput.value = targetRedirectUrl;
+
+  function resetRedirectUrl() {
+    redirectUrlInput.value = browserReturnUrl;
+    return false;
   }
+  function resetRedirectUrlBrowser() {
+    redirectUrlInput.value = window.browserReturnUrl;
+    return false;
+  }
+  function resetRedirectUrlServer() {
+    redirectUrlInput.value = window.serverReturnUrl;
+    return false;
+  }
+  window.resetRedirectUrl = resetRedirectUrl;
+  window.resetRedirectUrlBrowser = resetRedirectUrlBrowser;
+  window.resetRedirectUrlServer = resetRedirectUrlServer;
+
 
   function redirectUrlChanged()
   {
-    var matches = (redirectUrlInput.value === targetRedirectUrl);
-    jQuery("#redirectUrlAsExpected")[0].style.display = matches ? "inline" : "none";
-    jQuery("#redirectUrlNotAsExpected")[0].style.display = matches ? "none" : "inline";
+    var serv = window.serverReturnUrl, brows = window.browserReturnUrl, val = redirectUrlInput.value;
+    if( val === '') {
+      console.log("RedirectUrlChanged: empty value");
+      jQuery("#redirectUrlAsExpected")[0].style.display = "none";
+      jQuery("#redirectUrlAsServers")[0].style.display =   "none";
+      jQuery("#redirectUrlAsBrowsers")[0].style.display =  "none";
+      jQuery("#redirectUrlDifferentOfAll")[0].style.display =  "none";
+      jQuery("#redirectMakeItLikePredicted")[0].style.display = "none";
+      jQuery("#redirectMakeItLikePredictedBrowser")[0].style.display = "none";
+      jQuery("#redirectMakeItLikePredictedServer")[0].style.display =   "none";
+    } else if( serv === brows ) {
+      console.log("RedirectUrlChanged: accordance");
+      jQuery("#redirectUrlAsExpected")[0].style.display = brows === val ? "inline" : "none";
+      jQuery("#redirectUrlAsServers")[0].style.display =   "none";
+      jQuery("#redirectUrlAsBrowsers")[0].style.display =  "none";
+      jQuery("#redirectUrlDifferentOfAll")[0].style.display =  brows !== val ? "inline" : "none";
+      jQuery("#redirectMakeItLikePredicted")[0].style.display = brows !== val ? "inline" : "none";
+      jQuery("#redirectMakeItLikePredictedBrowser")[0].style.display = "none";
+      jQuery("#redirectMakeItLikePredictedServer")[0].style.display =   "none";
+    } else {
+      console.log("RedirectUrlChanged: disonance");
+      jQuery("#redirectUrlAsExpected")[0].style.display =  "none";
+      jQuery("#redirectUrlAsServers")[0].style.display =  serv === val ? "inline" : "none";
+      jQuery("#redirectUrlAsBrowsers")[0].style.display =  brows === val ? "inline" : "none";
+      jQuery("#redirectUrlDifferentOfAll")[0].style.display = serv !== val && brows !== val ? "inline" : "none";
+      jQuery("#redirectMakeItLikePredicted")[0].style.display =  "none";
+      jQuery("#redirectMakeItLikePredictedBrowser")[0].style.display =  bbrows !== val ? "inline" : "none";
+      jQuery("#redirectMakeItLikePredictedServer")[0].style.display =  serv !== val ? "inline" : "none";
+    }
   }
 
   function validateFields() {
@@ -98,7 +138,6 @@ require(['jquery'], function (jQuery) {
       passed = passed && jQuery(jQuery("input[name$='_clientid']")[0]).val() !== "";
       passed = passed && jQuery(jQuery("input[name$='_secret'  ]")[0]).val() !== "";
       passed = passed && jQuery(jQuery("input[name$='_tenantid']")[0]).val() !== "";
-      passed = passed && jQuery(jQuery("input[name$='_redirectUrl']")[0]).val() !== "";
       return passed;
     } else { // deactivated: can save
       return true;
@@ -138,10 +177,9 @@ require(['jquery'], function (jQuery) {
     jQuery("form.xform input").each(()=>{jQuery(this).change(validateAndUpdate)});
 
     redirectUrlInput = jQuery(prefix + 'redirectUrl')[0];
-    if (redirectUrlInput.value === "") {
-      resetRedirectUrl();
-    }
+    redirectUrlInput.placeholder = window.placeHolderForRedirectUrl;
 
+    console.log("redirectUrlInput: " + jQuery(prefix + 'redirectUrl'));
     jQuery(prefix + 'redirectUrl').change(redirectUrlChanged);
     jQuery(prefix + 'redirectUrl').keyup(redirectUrlChanged);
     redirectUrlChanged();
