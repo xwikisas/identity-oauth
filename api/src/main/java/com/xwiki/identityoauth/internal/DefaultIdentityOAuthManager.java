@@ -80,11 +80,11 @@ public class DefaultIdentityOAuthManager
     @Inject
     private IdentityOAuthAuthService authService;
 
-    // initialisation state
-
     // ------ services from the environment
     @Inject
     private Provider<XWikiContext> xwikiContextProvider;
+
+    // initialisation state
 
     @Inject
     private Logger log;
@@ -197,8 +197,6 @@ public class DefaultIdentityOAuthManager
         return result;
     }
 
-    // ==================================================================================
-
     void rebuildProviders()
     {
         List<ProviderConfig> providerConfigs = ioXWikiObjects.loadProviderConfigs();
@@ -243,6 +241,8 @@ public class DefaultIdentityOAuthManager
         }
     }
 
+    // ==================================================================================
+
     /**
      * Performs XWiki rendering and transformation on the loginCodes of each provider.
      *
@@ -270,6 +270,16 @@ public class DefaultIdentityOAuthManager
             }
         }
         return renderedLoginCodes;
+    }
+
+    /**
+     * Removes all information about the services of IdentityOAuth within the session of this user.
+     */
+    public void clearAllSessionInfos()
+    {
+        for (String providerName : providers.keySet()) {
+            sessionInfoProvider.get().clear(providerName);
+        }
     }
 
     /**

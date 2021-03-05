@@ -20,6 +20,7 @@
 package com.xwiki.identityoauth.internal;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import org.xwiki.bridge.event.ApplicationReadyEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.observation.AbstractEventListener;
-import org.xwiki.observation.EventListener;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -40,9 +40,12 @@ import com.xwiki.identityoauth.IdentityOAuthManager;
  * @since 1.0
  */
 @Component
+@Named(IdentityOAuthEventListener.NAME)
 @Singleton
-public class IdentityOAuthEventListener extends AbstractEventListener implements EventListener
+public class IdentityOAuthEventListener extends AbstractEventListener
 {
+    static final String NAME = "IdentityOAuthEventListener";
+
     @Inject
     private IdentityOAuthXWikiObjects ioXWikiObjects;
 
@@ -57,18 +60,7 @@ public class IdentityOAuthEventListener extends AbstractEventListener implements
      */
     public IdentityOAuthEventListener()
     {
-        super("IdentityOAuthEventListener", new ApplicationReadyEvent(), new DocumentUpdatedEvent());
-    }
-
-    /**
-     * The name of the event listener.
-     *
-     * @return idoauth.scriptservice.
-     */
-    @Override
-    public String getName()
-    {
-        return "idoauth.scriptservice";
+        super(NAME, new ApplicationReadyEvent(), new DocumentUpdatedEvent());
     }
 
     /**
@@ -98,7 +90,7 @@ public class IdentityOAuthEventListener extends AbstractEventListener implements
         }
 
         if (configChanged || applicationStarted) {
-            log.info("Reloading IdentityOAuth proivders! ");
+            log.info("Reloading IdentityOAuth providers! ");
             identityOAuthManager.reloadConfig();
         }
     }

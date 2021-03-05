@@ -98,5 +98,9 @@ public interface IdentityOAuthManager
      */
     void requestCurrentToken(String providerHint);
 
+    /**
+     * Removes all information about the services of IdentityOAuth within the session of this user.
+     */
+    void clearAllSessionInfos();
 
 }

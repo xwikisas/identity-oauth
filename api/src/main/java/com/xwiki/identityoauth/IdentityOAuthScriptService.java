@@ -119,4 +119,11 @@ public class IdentityOAuthScriptService implements ScriptService
     {
         return manager.doesDetectReturn();
     }
+
+    /**
+     * Removes all information about the services of IdentityOAuth within the session of this user.
+     */
+    public void clearAllSessionInfos() {
+        manager.clearAllSessionInfos();
+    }
 }

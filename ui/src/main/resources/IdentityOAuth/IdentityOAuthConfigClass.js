@@ -182,6 +182,7 @@ require(['jquery'], function (jQuery) {
     console.log("redirectUrlInput: " + jQuery(prefix + 'redirectUrl'));
     jQuery(prefix + 'redirectUrl').change(redirectUrlChanged);
     jQuery(prefix + 'redirectUrl').keyup(redirectUrlChanged);
+    jQuery(prefix + 'redirectUrl').blur(redirectUrlChanged);
     redirectUrlChanged();
     validateAndUpdate();
 
