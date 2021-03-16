@@ -112,4 +112,9 @@ public interface IdentityOAuthConstants
      * OAUTH_RETURN.
      */
     String OAUTH_RETURN = "OAUTH_RETURN";
+    /**
+     * --image-base64--.
+     */
+    String BASE64_MARKER = "--image-base64--";
+
 }

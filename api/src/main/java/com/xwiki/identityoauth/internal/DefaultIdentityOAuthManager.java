@@ -84,10 +84,10 @@ public class DefaultIdentityOAuthManager
     @Inject
     private Provider<XWikiContext> xwikiContextProvider;
 
-    // initialisation state
-
     @Inject
     private Logger log;
+
+    // initialisation state
 
     @Inject
     @Named("context")
@@ -228,7 +228,18 @@ public class DefaultIdentityOAuthManager
                     providersLoginCodes.add(XWIKILOGIN);
                     providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
                 }
-                providersLoginCodes.add(config.getLoginCode().replaceAll("-PROVIDER-", config.getName()));
+                String loginCode = config.getLoginCode();
+                if (loginCode.contains(BASE64_MARKER)) {
+                    int cursor = -1;
+                    while ((cursor = loginCode.indexOf(BASE64_MARKER, cursor + 1)) > -1) {
+                        int startOfPictName = cursor + BASE64_MARKER.length();
+                        int endOfPictName = loginCode.indexOf("--", startOfPictName);
+                        loginCode = loginCode.substring(0, cursor)
+                                + ioXWikiObjects.createDataUrl(loginCode.substring(startOfPictName, endOfPictName))
+                                + loginCode.substring(endOfPictName + 2);
+                    }
+                }
+                providersLoginCodes.add(loginCode.replaceAll("-PROVIDER-", config.getName()));
                 providersLoginCodesSyntax.add(config.getProviderDocumentSyntax());
                 lastScore = config.getOrderHint();
             } catch (Exception e) {
@@ -240,8 +251,6 @@ public class DefaultIdentityOAuthManager
             providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
         }
     }
-
-    // ==================================================================================
 
     /**
      * Performs XWiki rendering and transformation on the loginCodes of each provider.
@@ -271,6 +280,8 @@ public class DefaultIdentityOAuthManager
         }
         return renderedLoginCodes;
     }
+
+    // ==================================================================================
 
     /**
      * Removes all information about the services of IdentityOAuth within the session of this user.

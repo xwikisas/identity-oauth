@@ -56,14 +56,14 @@
                            onclick='return loginWithXWiki()' class='btn btn-primary col-xs-12' ##
                            style='text-align:left; background: white; color: #808080; ##
                                    font-weight:bold; border: #808080 2px solid;'>##
-              <img src='${xwikiLogoUrl}'
+              <img src='../../../resources/icons/xwiki/favicon.svg'
                    style='height:1.2em; margin-bottom:0.1em'>&nbsp;&nbsp;${services.localization.render('idoauth.login.withxwiki')}</a>")
         #else
           #set($loginCodes="${loginCodes}${loginCode}")
         #end
       #end
       #set($loginCodes="${loginCodes}</div><div style='clear: both;'></div></div>")
-      #if($count > 0)#set($hasSeveralLogins=true)#else#set($hasSeveralLogins=false)#end
+      #if($count > 1)#set($hasSeveralLogins=true)#else#set($hasSeveralLogins=false)#end
     #end
 
     ## ============================================== end of velocity preparation ===============================
@@ -114,9 +114,11 @@
               var loginCode = "${escapetool.javascript($loginCodes)}";
               loginCode = loginCode.replace("-URL-",url);
               jQuery(loginCode).insertBefore(jQuery(".panel .panel-body dl"));
-              if (XWiki.contextaction != "loginsubmit" && $hasSeveralLogins) {
-                jQuery(".panel .panel-body dl").hide();
-              }
+              #if($hasSeveralLogins)
+                  if (XWiki.contextaction != "loginsubmit") {
+                      jQuery(".panel .panel-body dl").hide();
+                  }
+              #end
             }
           }); // end requirejs
         });

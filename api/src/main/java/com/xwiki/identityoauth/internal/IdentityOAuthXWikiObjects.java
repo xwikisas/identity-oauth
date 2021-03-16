@@ -33,9 +33,12 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.AttachmentReferenceResolver;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
@@ -79,6 +82,9 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
 
     @Inject
     private DocumentReferenceResolver<String> documentResolver;
+
+    @Inject
+    private AttachmentReferenceResolver<String> attachmentResolver;
 
     // internal objects
     private EntityReference providerConfigRef;
@@ -388,6 +394,36 @@ public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
             return map;
         } catch (XWikiException e) {
             throw new IdentityOAuthException("Trouble at reading configuration.", e);
+        }
+    }
+
+    /**
+     * Extracts the content of an attachment and encodes it as a data-url (using media-type and base64). This
+     * implementations returns "file-size-is-too-large" if bigger than 2 Mb.
+     *
+     * @param attachmentRef the reference to the attachment e.g. Space/Page/filename.png
+     * @return a data-url suitable to embed within a web-page.
+     */
+    String createDataUrl(String attachmentRef)
+    {
+        try {
+            XWikiContext context = contextProvider.get();
+            AttachmentReference ref = attachmentResolver.resolve(attachmentRef);
+            XWikiDocument doc = context.getWiki().getDocument(ref.getParent(), context);
+            XWikiAttachment attachment = doc.getAttachment(ref.getName());
+            if (attachment == null) {
+                return "attachment " + attachmentRef + " not found";
+            }
+            if (attachment.getLongSize() > 2 * 1024 * 1024) {
+                return "file-size-is-too-large";
+            }
+
+            return "data:" + attachment.getMimeType() + ";base64,"
+                    + new Base64(2 * 1024 * 1024 * 2)
+                    .encodeAsString(attachment.getContent(context));
+        } catch (Exception e) {
+            log.warn("Issue at creating data-url", e);
+            throw new IdentityOAuthException("Trouble at creating data-url", e);
         }
     }
 }
