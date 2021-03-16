@@ -25,6 +25,7 @@ import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.xwiki.bridge.event.ApplicationReadyEvent;
+import org.xwiki.bridge.event.DocumentDeletedEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.observation.AbstractEventListener;
@@ -82,7 +83,7 @@ public class IdentityOAuthEventListener extends AbstractEventListener
         if (event instanceof ApplicationReadyEvent) {
             applicationStarted = true;
         }
-        if (event instanceof DocumentUpdatedEvent) {
+        if (event instanceof DocumentUpdatedEvent || event instanceof DocumentDeletedEvent) {
             XWikiDocument document = (XWikiDocument) source;
             if (document != null && ioXWikiObjects.hasIOConfigObject(document)) {
                 configChanged = true;
