@@ -20,6 +20,7 @@
 package com.xwiki.identityoauth;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,7 @@ public interface IdentityOAuthProvider
      * @param token The token obtained through the authorization to act on behalf of the user.
      * @return A decoding of the identity resource
      */
-    IdentityDescription fetchIdentityDetails(String token);
+    AbstractIdentityDescription fetchIdentityDetails(String token);
 
     /**
      * Opens the stream of the user image file if it was modified later than the given date.
@@ -131,7 +132,8 @@ public interface IdentityOAuthProvider
      * @param token           the currently valid token.
      * @return A triple made of inputstream, media-type, and possibly guessed filename.
      */
-    Triple<InputStream, String, String> fetchUserImage(Date ifModifiedSince, IdentityDescription id, String token);
+    Triple<InputStream, String, String> fetchUserImage(Date ifModifiedSince, AbstractIdentityDescription id,
+            String token);
 
     /**
      * Allows to add provider-specific XWikiObjects to the user-object.
@@ -140,7 +142,7 @@ public interface IdentityOAuthProvider
      * @param doc           The user-document where objects can be manipulated. This document will be saved thereafter.
      * @return true if the object was changed
      */
-    boolean enrichUserObject(IdentityDescription idDescription, XWikiDocument doc);
+    boolean enrichUserObject(AbstractIdentityDescription idDescription, XWikiDocument doc);
 
     /**
      * Receives the token in the session after a call to {@link IdentityOAuthManager#requestCurrentToken(String)}.
@@ -159,7 +161,7 @@ public interface IdentityOAuthProvider
     /**
      * An object view on the information fetched from the OAuth service.
      */
-    class IdentityDescription
+    abstract class AbstractIdentityDescription
     {
         /**
          * The first part of the name.
@@ -179,11 +181,18 @@ public interface IdentityOAuthProvider
         /**
          * The list of emails.
          */
-        public List<String> emails;
+        public List<String> emails = new ArrayList<>();
 
         /**
          * A URL where to fetch the user-image.
          */
         public String userImageUrl;
+
+        /**
+         * Left for implementing subclasses to specify.
+         *
+         * @return the issuer-URL (which may be configuration dependent) or null (then the provider name will be used).
+         */
+        public abstract String getIssuerURL();
     }
 }

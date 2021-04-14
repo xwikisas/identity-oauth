@@ -117,4 +117,8 @@ public interface IdentityOAuthConstants
      */
     String BASE64_MARKER = "--image-base64--";
 
+    /**
+     * _CHANGE_ME_LOGIN_URL_.
+     */
+    String CHANGE_ME_LOGIN_URL = "_CHANGE_ME_LOGIN_URL_";
 }

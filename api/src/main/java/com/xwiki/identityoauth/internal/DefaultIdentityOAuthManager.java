@@ -21,6 +21,7 @@ package com.xwiki.identityoauth.internal;
 
 import java.io.StringReader;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -76,6 +77,9 @@ public class DefaultIdentityOAuthManager
     // own components
     @Inject
     private IdentityOAuthXWikiObjects ioXWikiObjects;
+
+    @Inject
+    private IdentityOAuthUserProc ioUserProc;
 
     @Inject
     private IdentityOAuthAuthService authService;
@@ -334,6 +338,11 @@ public class DefaultIdentityOAuthManager
             String oauthBackPage = request.getParameter("browserLocation");
             String redirectUrl = provider.getRemoteAuthorizationUrl(oauthBackPage);
 
+            if (redirectUrl.contains(CHANGE_ME_LOGIN_URL)) {
+                String loginPageUrl  = ioXWikiObjects.getLoginPageUrl();
+                redirectUrl = redirectUrl.replace(CHANGE_ME_LOGIN_URL, URLEncoder.encode(loginPageUrl));
+            }
+
             // populate sessionInfo with fresh data
             sessionInfoProvider.get().clear(providerHint);
             String xredirect = request.getParameter("xredirect");
@@ -398,8 +407,8 @@ public class DefaultIdentityOAuthManager
             sessionInfo.setToken(providerHint, token.getLeft());
             sessionInfo.setTokenExpiry(providerHint, token.getRight());
 
-            IdentityOAuthProvider.IdentityDescription id = provider.fetchIdentityDetails(token.getLeft());
-            String xwikiUser = ioXWikiObjects.updateXWikiUser(id, provider, token.getLeft());
+            IdentityOAuthProvider.AbstractIdentityDescription id = provider.fetchIdentityDetails(token.getLeft());
+            String xwikiUser = ioUserProc.updateXWikiUser(id, provider, token.getLeft());
 
             // login at next call to the authenticator (the next http request)
             sessionInfo.setUserToLogIn(xwikiUser);
