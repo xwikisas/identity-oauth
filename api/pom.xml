@@ -45,11 +45,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.github.scribejava</groupId>
-      <artifactId>scribejava-apis</artifactId>
-      <version>8.1.0</version>
-    </dependency>
-    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
