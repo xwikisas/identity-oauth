@@ -178,7 +178,6 @@
         <artifactId>revapi-maven-plugin</artifactId>
         <version>0.10.5</version>
         <configuration>
-          <failCriticality>allowed</failCriticality>
           <analysisConfiguration>
             <revapi.filter>
               <archives>
@@ -202,7 +201,14 @@
                 <old>class org.xwiki.model.reference.LocalDocumentReference</old>
                 <new>class org.xwiki.model.reference.LocalDocumentReference</new>
                 <superClass>org.xwiki.model.reference.AbstractLocalizedEntityReference</superClass>
-                <justification>&lt;&lt;&lt;&lt; ADD YOUR EXPLANATION FOR THE NECESSITY OF THIS CHANGE &gt;&gt;&gt;&gt;&gt;</justification>
+                <justification>Taken care of by the XWiki dev community</justification>
+              </item>
+              <item>
+                <code>java.class.nonFinalClassInheritsFromNewClass</code>
+                <old>class org.xwiki.model.reference.DocumentReference</old>
+                <new>class org.xwiki.model.reference.DocumentReference</new>
+                <superClass>org.xwiki.model.reference.AbstractLocalizedEntityReference</superClass>
+                <justification>Taken care of by the XWiki dev community</justification>
               </item>
             </revapi.ignore>
           </analysisConfiguration>
