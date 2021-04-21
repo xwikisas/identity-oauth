@@ -170,4 +170,45 @@
   </dependencies>
 
 
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.revapi</groupId>
+        <artifactId>revapi-maven-plugin</artifactId>
+        <version>0.10.5</version>
+        <configuration>
+          <failCriticality>allowed</failCriticality>
+          <analysisConfiguration>
+            <revapi.filter>
+              <archives>
+                <!-- We're ignoring all API incompatibilities from XWiki dependencies (i.e. commons and rendering)
+                     since they're already covered by their own builds and we release all of them together. -->
+                <exclude>
+                  <item>org\.xwiki\.commons:.*:.*</item>
+                  <item>org\.xwiki\.platform:.*:.*</item>
+                  <item>org\.xwiki\.rendering:.*:.*</item>
+                </exclude>
+              </archives>
+            </revapi.filter>
+            <revapi.ignore>
+              <item>
+                <code>java.class.removed</code>
+                <old>class com.xpn.xwiki.store.migration.hibernate.MigrationResourceAccessor</old>
+                <justification>Was never meant to be public</justification>
+              </item>
+              <item><!-- attempt -->
+                <code>java.class.nonFinalClassInheritsFromNewClass</code>
+                <old>class org.xwiki.model.reference.LocalDocumentReference</old>
+                <new>class org.xwiki.model.reference.LocalDocumentReference</new>
+                <superClass>org.xwiki.model.reference.AbstractLocalizedEntityReference</superClass>
+                <justification>&lt;&lt;&lt;&lt; ADD YOUR EXPLANATION FOR THE NECESSITY OF THIS CHANGE &gt;&gt;&gt;&gt;&gt;</justification>
+              </item>
+            </revapi.ignore>
+          </analysisConfiguration>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
