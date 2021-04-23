@@ -34,6 +34,7 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.container.servlet.filters.SavedRequestManager;
+import org.xwiki.context.Execution;
 import org.xwiki.text.StringUtils;
 
 import com.xpn.xwiki.XWikiContext;
@@ -69,6 +70,9 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
     private Provider<ConfigurationSource> xwikiCfg;
 
     private Pattern logoutRequestMatcher;
+
+    @Inject
+    private Execution execution;
 
     /**
      * Reads the configuration.
@@ -183,6 +187,9 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
                     + URLEncoder.encode(redirectBack.toString(), "UTF-8");
             log.info("Redirecting to " + finalURL);
             redirected = true;
+            if (execution.getContext() != null) {
+                execution.getContext().setProperty("bypassDomainSecurityCheck", true);
+            }
             context.getResponse().sendRedirect(finalURL);
             //}
         } catch (Exception e) {

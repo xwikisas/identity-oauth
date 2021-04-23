@@ -48,7 +48,7 @@ public class IdentityOAuthEventListener extends AbstractEventListener
     static final String NAME = "IdentityOAuthEventListener";
 
     @Inject
-    private IdentityOAuthXWikiObjects ioXWikiObjects;
+    private IdentityOAuthConfigTools ioXWikiObjects;
 
     @Inject
     private IdentityOAuthManager identityOAuthManager;

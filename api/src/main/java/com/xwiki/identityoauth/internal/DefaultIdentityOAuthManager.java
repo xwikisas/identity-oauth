@@ -76,10 +76,10 @@ public class DefaultIdentityOAuthManager
 
     // own components
     @Inject
-    private IdentityOAuthXWikiObjects ioXWikiObjects;
+    private IdentityOAuthConfigTools ioXWikiObjects;
 
     @Inject
-    private IdentityOAuthUserProc ioUserProc;
+    private IdentityOAuthUserTools ioUserProc;
 
     @Inject
     private IdentityOAuthAuthService authService;

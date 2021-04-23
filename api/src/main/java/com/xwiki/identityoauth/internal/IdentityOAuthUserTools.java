@@ -54,9 +54,9 @@ import com.xwiki.identityoauth.IdentityOAuthProvider;
  * @version $Id$
  * @since 1.0
  */
-@Component(roles = IdentityOAuthUserProc.class)
+@Component(roles = IdentityOAuthUserTools.class)
 @Singleton
-public class IdentityOAuthUserProc implements IdentityOAuthConstants
+public class IdentityOAuthUserTools implements IdentityOAuthConstants
 {
     // environment
     @Inject

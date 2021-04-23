@@ -1,8 +1,8 @@
-com.xwiki.identityoauth.internal.IdentityOAuthXWikiObjects
+com.xwiki.identityoauth.internal.IdentityOAuthConfigTools
 com.xwiki.identityoauth.internal.CookieAuthenticationPersistence
 com.xwiki.identityoauth.internal.IdentityOAuthAuthService
 com.xwiki.identityoauth.internal.DefaultIdentityOAuthManager
 com.xwiki.identityoauth.internal.IdentityOAuthEventListener
 com.xwiki.identityoauth.internal.IdentityOAuthSessionInfoProvider
-com.xwiki.identityoauth.internal.IdentityOAuthUserProc
+com.xwiki.identityoauth.internal.IdentityOAuthUserTools
 com.xwiki.identityoauth.IdentityOAuthScriptService

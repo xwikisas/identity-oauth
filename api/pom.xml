@@ -122,12 +122,6 @@
       <groupId>com.xwiki.licensing</groupId>
       <artifactId>application-licensing-licensor-api</artifactId>
       <version>${licensing.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.json</groupId>
-          <artifactId>json</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -138,16 +132,6 @@
       <groupId>org.xwiki.contrib.oidc</groupId>
       <artifactId>oidc-authenticator-object</artifactId>
       <version>1.24.1-SNAPSHOT</version>
-      <exclusions>
-        <!--        <exclusion>
-                  <groupId>org.json</groupId>
-                  <artifactId>json</artifactId>
-                </exclusion>
-                <exclusion>
-                  <groupId>org.xwiki.platform</groupId>
-                  <artifactId>xwiki-platform-oldcore</artifactId>
-                </exclusion>
-        -->      </exclusions>
     </dependency>
 
     <!-- force Jackson versions to the currently supported. -->

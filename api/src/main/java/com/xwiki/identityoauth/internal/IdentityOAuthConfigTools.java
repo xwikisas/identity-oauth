@@ -58,9 +58,9 @@ import com.xwiki.identityoauth.IdentityOAuthException;
  * @version $Id$
  * @since 1.0
  */
-@Component(roles = IdentityOAuthXWikiObjects.class)
+@Component(roles = IdentityOAuthConfigTools.class)
 @Singleton
-public class IdentityOAuthXWikiObjects implements IdentityOAuthConstants
+public class IdentityOAuthConfigTools implements IdentityOAuthConstants
 {
     // environment
     @Inject

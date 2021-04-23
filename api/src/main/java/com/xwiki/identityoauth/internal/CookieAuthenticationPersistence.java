@@ -83,7 +83,7 @@ public class CookieAuthenticationPersistence implements Initializable
     private Logger logger;
 
     @Inject
-    private Provider<IdentityOAuthXWikiObjects> gaXwikiObjects;
+    private Provider<IdentityOAuthConfigTools> gaXwikiObjects;
 
     private String cookiePrefix;
 
