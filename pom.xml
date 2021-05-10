@@ -26,7 +26,7 @@
     </parent>
     <groupId>com.xwiki.identity-oauth</groupId>
     <artifactId>identity-oauth-parent</artifactId>
-    <version>1.0-RC5</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Identity OAuth (pro) parent POM</name>
     <description>This extension allows users to authenticate to the wiki using external providers</description>
@@ -42,7 +42,7 @@
         <connection>scm:git:git://github.com/xwikisas/identity-oauth.git</connection>
         <developerConnection>scm:git:git@github.com:xwikisas/identity-oauth.git</developerConnection>
         <url>scm:https://github.com/xwikisas/identity-oauth/tree/master</url>
-        <tag>identity-oauth-parent-1.0-RC5</tag>
+        <tag>HEAD</tag>
     </scm>
     <modules>
         <module>api</module>
