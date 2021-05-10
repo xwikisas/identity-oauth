@@ -19,6 +19,7 @@
  */
 package com.xwiki.identityoauth.internal;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,7 +35,7 @@ import javax.inject.Singleton;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.oidc.auth.store.OIDCUserStore;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.AttachmentReferenceResolver;
 import org.xwiki.model.reference.DocumentReference;
@@ -43,6 +44,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.ObjectReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
+import org.xwiki.rendering.syntax.Syntax;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -50,6 +52,7 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xwiki.identityoauth.IdentityOAuthException;
+import com.xwiki.identityoauth.IdentityOAuthProvider;
 
 /**
  * The objects representing the configuration of the application as well as methods to connect to XWiki for the
@@ -83,7 +86,8 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
     private AttachmentReferenceResolver<String> attachmentResolver;
 
     @Inject
-    private OIDCUserStore oidcUserStore;
+    @Named("context")
+    private ComponentManager componentManager;
 
     // internal objects
     private EntityReference providerConfigRef;
@@ -158,7 +162,13 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
             for (List<BaseObject> l : doc.getXObjects().values()) {
                 for (BaseObject obj : l) {
                     for (String name : obj.getPropertyNames()) {
-                        map.put(name, obj.getStringValue(name));
+                        String value = obj.getStringValue(name);
+                        if ("redirectUrl".equals(name)) {
+                            if (value == null || value.trim().length() == 0) {
+                                value = getLoginPageUrl();
+                            }
+                        }
+                        map.put(name, value);
                     }
                 }
             }
@@ -204,10 +214,75 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
         String loginUrl = context.getWiki().getURL(
                 documentResolver.resolve("xwiki:XWiki.XWikiLogin"),
                 "login", contextProvider.get());
-        if (loginUrl.startsWith("http://") || loginUrl.startsWith("https://")) {
-            return loginUrl;
-        } else {
-            return context.getURL().toExternalForm();
+        if (!(loginUrl.startsWith("http://") || loginUrl.startsWith("https://"))) {
+            String abs = context.getURL().toExternalForm();
+            if (loginUrl.startsWith("/")) {
+                loginUrl = abs.substring(0, abs.indexOf('/', 8)) + loginUrl;
+                // 8 = "http://".length or "https://".length
+            } else {
+                loginUrl = abs;
+            }
+        }
+        if (loginUrl.contains("?")) {
+            loginUrl = loginUrl.substring(0, loginUrl.indexOf('?'));
+        }
+        log.info("Setting automatic redirect URL to " + loginUrl + ".");
+        return loginUrl;
+    }
+
+    void loadAndRebuildProviders(List<String> providersLoginCodes, List<Syntax> providersLoginCodesSyntax,
+            Map<String, IdentityOAuthProvider> providers)
+    {
+        List<ProviderConfig> providerConfigs = this.loadProviderConfigs();
+        providerConfigs.sort(new Comparator<ProviderConfig>()
+        {
+            @Override
+            public int compare(ProviderConfig o1, ProviderConfig o2)
+            {
+                return Integer.compare(o1.getOrderHint(), o2.getOrderHint());
+            }
+        });
+        int lastScore = Integer.MIN_VALUE;
+        providersLoginCodes.clear();
+        providersLoginCodesSyntax.clear();
+        providers.clear();
+        for (ProviderConfig config : providerConfigs) {
+            try {
+                IdentityOAuthProvider pr = componentManager.getInstance(
+                        IdentityOAuthProvider.class, config.getName());
+                pr.setProviderHint(config.getName());
+                pr.setConfigPage(config.getConfigPage());
+                pr.initialize(config.getConfig());
+                providers.put(config.getName(), pr);
+                if (!pr.isActive()) {
+                    continue;
+                }
+                // insert XWIKI at position zero
+                if (config.getOrderHint() > 0 && lastScore <= 0) {
+                    providersLoginCodes.add(XWIKILOGIN);
+                    providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
+                }
+                String loginCode = config.getLoginCode();
+                if (loginCode.contains(BASE64_MARKER)) {
+                    int cursor = -1;
+                    while ((cursor = loginCode.indexOf(BASE64_MARKER, cursor + 1)) > -1) {
+                        int startOfPictName = cursor + BASE64_MARKER.length();
+                        int endOfPictName = loginCode.indexOf("--", startOfPictName);
+                        loginCode = loginCode.substring(0, cursor)
+                                + this.createDataUrl(loginCode.substring(startOfPictName, endOfPictName))
+                                + loginCode.substring(endOfPictName + 2);
+                    }
+                }
+                providersLoginCodes.add(loginCode.replaceAll("-PROVIDER-", config.getName()));
+                providersLoginCodesSyntax.add(config.getProviderDocumentSyntax());
+                lastScore = config.getOrderHint();
+            } catch (Exception e) {
+                log.warn("Trouble at creating provider \"" + config.getName() + "\":", e);
+            }
+        }
+        if (lastScore <= 0) {
+            providersLoginCodes.add(XWIKILOGIN);
+            providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
         }
     }
 }

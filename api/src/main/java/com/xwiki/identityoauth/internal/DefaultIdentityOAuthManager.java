@@ -23,14 +23,12 @@ import java.io.StringReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
@@ -38,9 +36,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.phase.Disposable;
 import org.xwiki.component.phase.Initializable;
+import org.xwiki.context.Execution;
 import org.xwiki.rendering.converter.Converter;
 import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
 import org.xwiki.rendering.renderer.printer.WikiPrinter;
@@ -69,14 +67,13 @@ import com.xwiki.identityoauth.IdentityOAuthProvider;
 public class DefaultIdentityOAuthManager
         implements IdentityOAuthManager, Initializable, Disposable, IdentityOAuthConstants
 {
+    private LifeCycle lifeCycleState = LifeCycle.CONSTRUCTED;
     enum LifeCycle
     { CONSTRUCTED, INITIALIZED, STARTING, RUNNING, STOPPING, STOPPED }
 
-    private LifeCycle lifeCycleState = LifeCycle.CONSTRUCTED;
-
     // own components
     @Inject
-    private IdentityOAuthConfigTools ioXWikiObjects;
+    private IdentityOAuthConfigTools ioConfigObjects;
 
     @Inject
     private IdentityOAuthUserTools ioUserProc;
@@ -91,17 +88,16 @@ public class DefaultIdentityOAuthManager
     @Inject
     private Logger log;
 
-    // initialisation state
-
-    @Inject
-    @Named("context")
-    private ComponentManager componentManager;
-
     @Inject
     private Converter converter;
 
+    // initialisation state
+
     @Inject
     private Provider<IdentityOAuthSessionInfo> sessionInfoProvider;
+
+    @Inject
+    private Execution execution;
 
     // -------------------------------------------------
     private Map<String, IdentityOAuthProvider> providers = new HashMap<>();
@@ -203,57 +199,7 @@ public class DefaultIdentityOAuthManager
 
     void rebuildProviders()
     {
-        List<ProviderConfig> providerConfigs = ioXWikiObjects.loadProviderConfigs();
-        providerConfigs.sort(new Comparator<ProviderConfig>()
-        {
-            @Override
-            public int compare(ProviderConfig o1, ProviderConfig o2)
-            {
-                return Integer.compare(o1.getOrderHint(), o2.getOrderHint());
-            }
-        });
-        int lastScore = Integer.MIN_VALUE;
-        providersLoginCodes.clear();
-        providersLoginCodesSyntax.clear();
-        providers.clear();
-        for (ProviderConfig config : providerConfigs) {
-            try {
-                IdentityOAuthProvider pr = componentManager.getInstance(
-                        IdentityOAuthProvider.class, config.getName());
-                pr.setProviderHint(config.getName());
-                pr.setConfigPage(config.getConfigPage());
-                pr.initialize(config.getConfig());
-                providers.put(config.getName(), pr);
-                if (!pr.isActive()) {
-                    continue;
-                }
-                // insert XWIKI at position zero
-                if (config.getOrderHint() > 0 && lastScore <= 0) {
-                    providersLoginCodes.add(XWIKILOGIN);
-                    providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
-                }
-                String loginCode = config.getLoginCode();
-                if (loginCode.contains(BASE64_MARKER)) {
-                    int cursor = -1;
-                    while ((cursor = loginCode.indexOf(BASE64_MARKER, cursor + 1)) > -1) {
-                        int startOfPictName = cursor + BASE64_MARKER.length();
-                        int endOfPictName = loginCode.indexOf("--", startOfPictName);
-                        loginCode = loginCode.substring(0, cursor)
-                                + ioXWikiObjects.createDataUrl(loginCode.substring(startOfPictName, endOfPictName))
-                                + loginCode.substring(endOfPictName + 2);
-                    }
-                }
-                providersLoginCodes.add(loginCode.replaceAll("-PROVIDER-", config.getName()));
-                providersLoginCodesSyntax.add(config.getProviderDocumentSyntax());
-                lastScore = config.getOrderHint();
-            } catch (Exception e) {
-                log.warn("Trouble at creating provider \"" + config.getName() + "\":", e);
-            }
-        }
-        if (lastScore <= 0) {
-            providersLoginCodes.add(XWIKILOGIN);
-            providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
-        }
+        ioConfigObjects.loadAndRebuildProviders(providersLoginCodes, providersLoginCodesSyntax, providers);
     }
 
     /**
@@ -285,8 +231,6 @@ public class DefaultIdentityOAuthManager
         return renderedLoginCodes;
     }
 
-    // ==================================================================================
-
     /**
      * Removes all information about the services of IdentityOAuth within the session of this user.
      */
@@ -296,6 +240,8 @@ public class DefaultIdentityOAuthManager
             sessionInfoProvider.get().clear(providerName);
         }
     }
+
+    // ==================================================================================
 
     /**
      * Reloads the configuration from the wiki-objects.
@@ -339,7 +285,7 @@ public class DefaultIdentityOAuthManager
             String redirectUrl = provider.getRemoteAuthorizationUrl(oauthBackPage);
 
             if (redirectUrl.contains(CHANGE_ME_LOGIN_URL)) {
-                String loginPageUrl  = ioXWikiObjects.getLoginPageUrl();
+                String loginPageUrl = ioConfigObjects.getLoginPageUrl();
                 redirectUrl = redirectUrl.replace(CHANGE_ME_LOGIN_URL, URLEncoder.encode(loginPageUrl));
             }
 
@@ -364,7 +310,10 @@ public class DefaultIdentityOAuthManager
                 sessionInfoProvider.get().setXredirect(xredirect);
             }
 
-            log.debug("OAuthStart will redirect.");
+            log.debug("OAuthStart will redirect to OAuth provider.");
+            if (execution.getContext() != null) {
+                execution.getContext().setProperty("bypassDomainSecurityCheck", true);
+            }
             xwikiContextProvider.get().getResponse().sendRedirect(redirectUrl);
             return true;
         } catch (Exception ex) {
@@ -416,6 +365,7 @@ public class DefaultIdentityOAuthManager
 
             // process redirect
             // getSessionInfo().xredirect is guaranteed to be not null in processOAuthStart
+            // we expect the final redirect to be an "allowed redirect" (probably the same URL as the current page)
             xwikiContextProvider.get().getResponse().sendRedirect(sessionInfo.pickXredirect());
             log.debug("Redirecting user to originally intended URL.");
         } catch (Exception e) {

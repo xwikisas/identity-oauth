@@ -75,12 +75,17 @@
   #macro (calcReturnUrlsJS)
   <script type="text/javascript">
       #set($serverReturn=$xwiki.getURL('XWiki.XWikiLogin', 'login')) ## typically a host-absolute URL
-      var a = document.createElement('a'); a.href= "${serverReturn}";
-      window.serverReturnUrl = a.href;
-      window.placeHolderForRedirectUrl = '#tp("redirectUrl.placeHolderMessage", ["==**==****==="])';
-      window.placeHolderForRedirectUrl = window.placeHolderForRedirectUrl.replace("==**==****===",a.href);
+      // serverReturn: $serverReturn
+      #if($serverReturn.startsWith("http://") || $serverReturn.startsWith("https://"))
+        ## all good
+      #elseif($serverReturn.startsWith('/'))
+        #set($absUrl = $xcontext.request.requestURL)
+      // absUrl: $absUrl
+        #set($serverReturn = "${absUrl.substring(0, $absUrl.indexOf('/',8))}${serverReturn}")
+      #end
+      window.placeHolderForRedirectUrl = '#tp("redirectUrl.placeHolderMessage", ["${serverReturn}"])';
       var p = window.location.href.indexOf('/admin');
-      window.browserReturnUrl = (p == -1 ?
+      window.browserReturnUrl = (p === -1 ?
               window.location.href :
               window.location.href.substring(0, p)) + "/login/XWiki/XWikiLogin"
   </script>
