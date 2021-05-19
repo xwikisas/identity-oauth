@@ -41,7 +41,7 @@
     <scm>
         <connection>scm:git:git://github.com/xwikisas/identity-oauth.git</connection>
         <developerConnection>scm:git:git@github.com:xwikisas/identity-oauth.git</developerConnection>
-        <url>scm:https://github.com/xwikisas/identity-oauth/tree/master</url>
+        <url>https://github.com/xwikisas/identity-oauth/tree/master</url>
         <tag>HEAD</tag>
     </scm>
     <modules>

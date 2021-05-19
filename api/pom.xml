@@ -110,10 +110,6 @@
         <artifactId>xwiki-rendering-macro-html</artifactId>
         <version>${rendering.version}</version>
       </dependency>
-
-
-
-
     </dependencies>
   </dependencyManagement>
   <dependencies>
