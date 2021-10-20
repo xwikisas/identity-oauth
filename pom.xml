@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.xwiki.parent</groupId>
         <artifactId>xwikisas-parent-platform</artifactId>
-        <version>10.11</version>
+        <version>11.10</version>
     </parent>
     <groupId>com.xwiki.identity-oauth</groupId>
     <artifactId>identity-oauth-parent</artifactId>
@@ -31,7 +31,7 @@
     <name>Identity OAuth (pro) parent POM</name>
     <description>This extension allows users to authenticate to the wiki using external providers</description>
     <properties>
-        <licensing.version>1.16</licensing.version>
+        <licensing.version>1.19</licensing.version>
         <xwiki.minversion>10.11</xwiki.minversion>
     </properties>
     <issueManagement>
@@ -48,4 +48,14 @@
         <module>api</module>
         <module>ui</module>
     </modules>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <createChecksum>true</createChecksum>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
