@@ -79,9 +79,10 @@ public class DefaultIdentityOAuthManager
     private IdentityOAuthUserTools ioUserProc;
 
     @Inject
-    private IdentityOAuthAuthService authService;
+    private Provider<IdentityOAuthAuthService> authServiceProvider;
 
     // ------ services from the environment
+    // Use lazy injection to avoid race condition when the event listener is initialized at XWiki startup.
     @Inject
     private Provider<XWikiContext> xwikiContextProvider;
 
@@ -156,14 +157,11 @@ public class DefaultIdentityOAuthManager
             // this will be done by the IdentityOAuthAuthService and UI pages later on, when it is called
             // within a request
             try {
-                xwiki.setAuthService(authService);
+                xwiki.setAuthService(authServiceProvider.get());
                 log.debug("Succeeded initting authService,");
             } catch (Exception e) {
                 log.warn("Failed initting authService", e);
             }
-        }
-        if (authService == null) {
-            log.debug("Not yet initting authService.");
         }
     }
 
