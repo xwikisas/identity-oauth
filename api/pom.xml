@@ -17,20 +17,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.xwiki.identity-oauth</groupId>
     <artifactId>identity-oauth-parent</artifactId>
     <version>1.2-SNAPSHOT</version>
   </parent>
+
   <artifactId>identity-oauth-api</artifactId>
   <packaging>jar</packaging>
+
   <name>Identity OAuth Integration (API)</name>
-  <description>This is the XWiki-API part of the Identity OAuth App which allows single sign on to several others.
-  </description>
-  <properties>
-  </properties>
+  <description>This is the XWiki-API part of the Identity OAuth App which allows single sign on to several others.</description>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -112,6 +113,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>com.xwiki.licensing</groupId>
@@ -128,44 +130,6 @@
       <artifactId>oidc-authenticator-object</artifactId>
       <version>1.25</version>
     </dependency>
-
-
   </dependencies>
-
-
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.revapi</groupId>
-        <artifactId>revapi-maven-plugin</artifactId>
-        <version>0.10.5</version>
-        <configuration>
-          <analysisConfiguration><![CDATA[
-            {
-              "revapi": {
-                "ignore" : [
-                  {
-                    "code": "java.class.nonFinalClassInheritsFromNewClass",
-                    "old": "class org.xwiki.model.reference.DocumentReference",
-                    "new": "class org.xwiki.model.reference.DocumentReference",
-                    "superClass": "org.xwiki.model.reference.AbstractLocalizedEntityReference",
-                    "justification": "Not a breakage"
-                  },
-                  {
-                    "code": "java.class.nonFinalClassInheritsFromNewClass",
-                    "old": "class org.xwiki.model.reference.LocalDocumentReference",
-                    "new": "class org.xwiki.model.reference.LocalDocumentReference",
-                    "superClass": "org.xwiki.model.reference.AbstractLocalizedEntityReference",
-                    "justification": "Not a breakage"
-                  }
-                ]
-              }
-            }
-          ]]></analysisConfiguration>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
