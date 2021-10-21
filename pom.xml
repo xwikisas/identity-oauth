@@ -17,45 +17,53 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.xwiki.parent</groupId>
-        <artifactId>xwikisas-parent-platform</artifactId>
-        <version>11.10</version>
-    </parent>
-    <groupId>com.xwiki.identity-oauth</groupId>
-    <artifactId>identity-oauth-parent</artifactId>
-    <version>1.2-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>Identity OAuth (pro) parent POM</name>
-    <description>This extension allows users to authenticate to the wiki using external providers</description>
-    <properties>
-        <licensing.version>1.19</licensing.version>
-        <xwiki.minversion>10.11</xwiki.minversion>
-    </properties>
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/xwikisas/identity-oauth/issues</url>
-    </issueManagement>
-    <scm>
-        <connection>scm:git:git://github.com/xwikisas/identity-oauth.git</connection>
-        <developerConnection>scm:git:git@github.com:xwikisas/identity-oauth.git</developerConnection>
-        <url>https://github.com/xwikisas/identity-oauth/tree/master</url>
-        <tag>HEAD</tag>
-    </scm>
-    <modules>
-        <module>api</module>
-        <module>ui</module>
-    </modules>
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-install-plugin</artifactId>
-                <configuration>
-                    <createChecksum>true</createChecksum>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.xwiki.parent</groupId>
+    <artifactId>xwikisas-parent-platform</artifactId>
+    <version>11.10</version>
+  </parent>
+
+  <groupId>com.xwiki.identity-oauth</groupId>
+  <artifactId>identity-oauth-parent</artifactId>
+  <version>1.2-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Identity OAuth (pro) parent POM</name>
+  <description>This extension allows users to authenticate to the wiki using external providers</description>
+
+  <properties>
+    <licensing.version>1.19</licensing.version>
+    <xwiki.minversion>11.10</xwiki.minversion>
+  </properties>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/xwikisas/identity-oauth/issues</url>
+  </issueManagement>
+  <scm>
+    <connection>scm:git:git://github.com/xwikisas/identity-oauth.git</connection>
+    <developerConnection>scm:git:git@github.com:xwikisas/identity-oauth.git</developerConnection>
+    <url>https://github.com/xwikisas/identity-oauth/tree/master</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <modules>
+    <module>api</module>
+    <module>ui</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-install-plugin</artifactId>
+        <configuration>
+          <createChecksum>true</createChecksum>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

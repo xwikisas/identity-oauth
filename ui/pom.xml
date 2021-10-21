@@ -17,107 +17,111 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.xwiki.identity-oauth</groupId>
-        <artifactId>identity-oauth-parent</artifactId>
-        <version>1.2-SNAPSHOT</version>
-    </parent>
-    <artifactId>identity-oauth-ui</artifactId>
-    <packaging>xar</packaging>
-    <name>Identity OAuth Integration (Pro) UI</name>
-    <description>This extension allows Single-Sign-On to XWiki</description>
-    <properties>
-        <!-- The list of documents that have an implicit unlimited free license. The users can view these documents without
-          buying a license or getting a trial license, but they cannot edit or delete them. -->
-        <xwiki.extension.licensing.publicDocuments>
-            IdentityOAuth.WebHome
-        </xwiki.extension.licensing.publicDocuments>
-        <xwiki.extension.licensing.excludedDocuments>
-            IdentityOAuth.Config,
-            IdentityOAuth.WebPreferences
-        </xwiki.extension.licensing.excludedDocuments>
-        <!-- Name to display by the Extension Manager -->
-        <xwiki.extension.name>Identity OAuth (Pro)</xwiki.extension.name>
-        <xwiki.extension.category>application</xwiki.extension.category>
-        <!-- Don't run CLIRR here since there's no Java code. -->
-        <xwiki.clirr.skip>true</xwiki.clirr.skip>
-        <!-- Don't run enforcer here since there's no Java code to avoid java7 requirement. -->
-        <xwiki.enforcer.skip>true</xwiki.enforcer.skip>
-    </properties>
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>identity-oauth-api</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.xwiki.licensing</groupId>
-            <artifactId>application-licensing-licensor-api</artifactId>
-            <version>${licensing.version}</version>
-        </dependency>
-    </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.xwiki.commons</groupId>
-                <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
-                <version>11.4</version>
-                <configuration>
-                    <transformations>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.xwiki.identity-oauth</groupId>
+    <artifactId>identity-oauth-parent</artifactId>
+    <version>1.2-SNAPSHOT</version>
+  </parent>
 
-                        <!-- view code -->
-                        <transformation>
-                            <file>IdentityOAuth/IdentityOAuthConfigMacros.xml</file>
-                            <xpath>/xwikidoc/content</xpath>
-                            <action>INSERT_TEXT</action>
-                            <content>src/main/resources/IdentityOAuth/IdentityOAuthConfigMacros.vm</content>
-                        </transformation>
-                        <transformation>
-                            <file>IdentityOAuth/IdentityOAuthConfigClass.xml</file>
-                            <xpath>/xwikidoc/object[className[text()='XWiki.JavaScriptExtension']]/property/code</xpath>
-                            <action>INSERT_TEXT</action>
-                            <content>src/main/resources/IdentityOAuth/IdentityOAuthConfigClass.js</content>
-                        </transformation>
-                        <transformation>
-                            <file>IdentityOAuth/IdentityOAuthConfigClass.xml</file>
-                            <xpath>/xwikidoc/object[className[text()='XWiki.StyleSheetExtension']]/property/code</xpath>
-                            <action>INSERT_TEXT</action>
-                            <content>src/main/resources/IdentityOAuth/IdentityOAuthConfigClass.css</content>
-                        </transformation>
-                        <transformation>
-                            <file>IdentityOAuth/LoginUIExtension.xml</file>
-                            <xpath>/xwikidoc/object[className[text()='XWiki.UIExtensionClass']]/property/content</xpath>
-                            <action>INSERT_TEXT</action>
-                            <content>src/main/resources/IdentityOAuth/LoginUIExtension.vm</content>
-                        </transformation>
+  <artifactId>identity-oauth-ui</artifactId>
+  <packaging>xar</packaging>
 
+  <name>Identity OAuth Integration (Pro) UI</name>
+  <description>This extension allows Single-Sign-On to XWiki</description>
 
-                        <!-- translations -->
-                        <transformation>
-                            <file>IdentityOAuth/Translations.xml</file>
-                            <xpath>/xwikidoc/content</xpath>
-                            <action>INSERT_TEXT</action>
-                            <content>src/main/resources/IdentityOAuth/Translations.properties</content>
-                        </transformation>
-                        <transformation>
-                            <file>IdentityOAuth/Translations.fr.xml</file>
-                            <xpath>/xwikidoc/content</xpath>
-                            <action>INSERT_TEXT</action>
-                            <content>src/main/resources/IdentityOAuth/Translations.fr.properties</content>
-                        </transformation>
-                        <transformation>
-                            <file>IdentityOAuth/Translations.de.xml</file>
-                            <xpath>/xwikidoc/content</xpath>
-                            <action>INSERT_TEXT</action>
-                            <content>src/main/resources/IdentityOAuth/Translations.de.properties</content>
-                        </transformation>
-                    </transformations>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <properties>
+    <!-- The list of documents that have an implicit unlimited free license. The users can view these documents without buying 
+      a license or getting a trial license, but they cannot edit or delete them. -->
+    <xwiki.extension.licensing.publicDocuments>
+      IdentityOAuth.WebHome
+    </xwiki.extension.licensing.publicDocuments>
+    <xwiki.extension.licensing.excludedDocuments>
+      IdentityOAuth.Config,
+      IdentityOAuth.WebPreferences
+    </xwiki.extension.licensing.excludedDocuments>
+    <!-- Name to display by the Extension Manager -->
+    <xwiki.extension.name>Identity OAuth (Pro)</xwiki.extension.name>
+    <xwiki.extension.category>application</xwiki.extension.category>
+    <!-- Don't run CLIRR here since there's no Java code. -->
+    <xwiki.clirr.skip>true</xwiki.clirr.skip>
+    <!-- Don't run enforcer here since there's no Java code to avoid java7 requirement. -->
+    <xwiki.enforcer.skip>true</xwiki.enforcer.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>identity-oauth-api</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.xwiki.licensing</groupId>
+      <artifactId>application-licensing-licensor-api</artifactId>
+      <version>${licensing.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.xwiki.commons</groupId>
+        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
+        <configuration>
+          <transformations>
+
+            <!-- view code -->
+            <transformation>
+              <file>IdentityOAuth/IdentityOAuthConfigMacros.xml</file>
+              <xpath>/xwikidoc/content</xpath>
+              <action>INSERT_TEXT</action>
+              <content>src/main/resources/IdentityOAuth/IdentityOAuthConfigMacros.vm</content>
+            </transformation>
+            <transformation>
+              <file>IdentityOAuth/IdentityOAuthConfigClass.xml</file>
+              <xpath>/xwikidoc/object[className[text()='XWiki.JavaScriptExtension']]/property/code</xpath>
+              <action>INSERT_TEXT</action>
+              <content>src/main/resources/IdentityOAuth/IdentityOAuthConfigClass.js</content>
+            </transformation>
+            <transformation>
+              <file>IdentityOAuth/IdentityOAuthConfigClass.xml</file>
+              <xpath>/xwikidoc/object[className[text()='XWiki.StyleSheetExtension']]/property/code</xpath>
+              <action>INSERT_TEXT</action>
+              <content>src/main/resources/IdentityOAuth/IdentityOAuthConfigClass.css</content>
+            </transformation>
+            <transformation>
+              <file>IdentityOAuth/LoginUIExtension.xml</file>
+              <xpath>/xwikidoc/object[className[text()='XWiki.UIExtensionClass']]/property/content</xpath>
+              <action>INSERT_TEXT</action>
+              <content>src/main/resources/IdentityOAuth/LoginUIExtension.vm</content>
+            </transformation>
+
+            <!-- translations -->
+            <transformation>
+              <file>IdentityOAuth/Translations.xml</file>
+              <xpath>/xwikidoc/content</xpath>
+              <action>INSERT_TEXT</action>
+              <content>src/main/resources/IdentityOAuth/Translations.properties</content>
+            </transformation>
+            <transformation>
+              <file>IdentityOAuth/Translations.fr.xml</file>
+              <xpath>/xwikidoc/content</xpath>
+              <action>INSERT_TEXT</action>
+              <content>src/main/resources/IdentityOAuth/Translations.fr.properties</content>
+            </transformation>
+            <transformation>
+              <file>IdentityOAuth/Translations.de.xml</file>
+              <xpath>/xwikidoc/content</xpath>
+              <action>INSERT_TEXT</action>
+              <content>src/main/resources/IdentityOAuth/Translations.de.properties</content>
+            </transformation>
+          </transformations>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
