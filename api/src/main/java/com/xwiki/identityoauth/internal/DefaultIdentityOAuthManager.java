@@ -68,8 +68,6 @@ public class DefaultIdentityOAuthManager
         implements IdentityOAuthManager, Initializable, Disposable, IdentityOAuthConstants
 {
     private LifeCycle lifeCycleState = LifeCycle.CONSTRUCTED;
-    enum LifeCycle
-    { CONSTRUCTED, INITIALIZED, STARTING, RUNNING, STOPPING, STOPPED }
 
     // own components
     @Inject
@@ -79,7 +77,7 @@ public class DefaultIdentityOAuthManager
     private IdentityOAuthUserTools ioUserProc;
 
     @Inject
-    private IdentityOAuthAuthService authService;
+    private Provider<IdentityOAuthAuthService> authServiceProvider;
 
     // ------ services from the environment
     @Inject
@@ -91,10 +89,10 @@ public class DefaultIdentityOAuthManager
     @Inject
     private Converter converter;
 
-    // initialisation state
-
     @Inject
     private Provider<IdentityOAuthSessionInfo> sessionInfoProvider;
+
+    // initialisation state
 
     @Inject
     private Execution execution;
@@ -102,9 +100,7 @@ public class DefaultIdentityOAuthManager
     // -------------------------------------------------
     private Map<String, IdentityOAuthProvider> providers = new HashMap<>();
 
-    private List<String> providersLoginCodes = new ArrayList<>();
-
-    private List<Syntax> providersLoginCodesSyntax = new ArrayList<>();
+    private List<ProviderConfig> providerConfigs = new ArrayList<>();
 
     @Override
     public void initialize()
@@ -156,14 +152,11 @@ public class DefaultIdentityOAuthManager
             // this will be done by the IdentityOAuthAuthService and UI pages later on, when it is called
             // within a request
             try {
-                xwiki.setAuthService(authService);
+                xwiki.setAuthService(authServiceProvider.get());
                 log.debug("Succeeded initting authService,");
             } catch (Exception e) {
                 log.warn("Failed initting authService", e);
             }
-        }
-        if (authService == null) {
-            log.debug("Not yet initting authService.");
         }
     }
 
@@ -199,7 +192,11 @@ public class DefaultIdentityOAuthManager
 
     void rebuildProviders()
     {
-        ioConfigObjects.loadAndRebuildProviders(providersLoginCodes, providersLoginCodesSyntax, providers);
+
+        providerConfigs = ioConfigObjects.loadAndRebuildProviders();
+        for (ProviderConfig config : providerConfigs) {
+            providers.put(config.getName(), config.getProvider());
+        }
     }
 
     /**
@@ -210,22 +207,24 @@ public class DefaultIdentityOAuthManager
     public List<String> renderLoginCodes()
     {
         startIfNeedBe();
-        List<String> renderedLoginCodes = new ArrayList<>(providersLoginCodes.size());
-        for (int i = 0; i < providersLoginCodes.size(); i++) {
+        List<String> renderedLoginCodes = new ArrayList<>(providerConfigs.size());
+        for (ProviderConfig config : providerConfigs) {
             try {
-                String loginCode = providersLoginCodes.get(i);
+                String loginCode = config.getPreparedLoginCode();
                 if (XWIKILOGIN.equals(loginCode)) {
                     renderedLoginCodes.add(loginCode);
                 } else {
                     // Convert input in XWiki Syntax 2.1 into XHTML. The result is stored in the printer.
-                    WikiPrinter printer = new DefaultWikiPrinter();
-                    converter.convert(new StringReader(loginCode),
-                            providersLoginCodesSyntax.get(i), Syntax.XHTML_1_0, printer);
-                    renderedLoginCodes.add(printer.toString());
+                    if (config.getProvider().isReady()) {
+                        WikiPrinter printer = new DefaultWikiPrinter();
+                        converter.convert(new StringReader(loginCode),
+                                config.getLoginCodeSyntax(), Syntax.XHTML_1_0, printer);
+                        renderedLoginCodes.add(printer.toString());
+                    }
                 }
             } catch (Exception e) {
-                renderedLoginCodes.add("BROKEN RENDERING");
-                log.warn("Can't render (BROKEN RENDERING): ", e);
+                renderedLoginCodes.add("BROKEN RENDERING " + config.getName());
+                log.warn("Can't render (BROKEN RENDERING " + config.getName() + "): ", e);
             }
         }
         return renderedLoginCodes;
@@ -241,8 +240,6 @@ public class DefaultIdentityOAuthManager
         }
     }
 
-    // ==================================================================================
-
     /**
      * Reloads the configuration from the wiki-objects.
      */
@@ -252,6 +249,8 @@ public class DefaultIdentityOAuthManager
         log.info("Reloading config.");
         rebuildProviders();
     }
+
+    // ==================================================================================
 
     private IdentityOAuthProvider getActiveProvider(String providerHint)
     {
@@ -286,7 +285,7 @@ public class DefaultIdentityOAuthManager
 
             if (redirectUrl.contains(CHANGE_ME_LOGIN_URL)) {
                 String loginPageUrl = ioConfigObjects.getLoginPageUrl();
-                redirectUrl = redirectUrl.replace(CHANGE_ME_LOGIN_URL, URLEncoder.encode(loginPageUrl));
+                redirectUrl = redirectUrl.replace(CHANGE_ME_LOGIN_URL, URLEncoder.encode(loginPageUrl, "UTF-8"));
             }
 
             // populate sessionInfo with fresh data
@@ -415,6 +414,8 @@ public class DefaultIdentityOAuthManager
         provider.receiveFreshToken(sessionInfoProvider.get().getAuthorizationCode(providerHint));
     }
 
+    enum LifeCycle
+    { CONSTRUCTED, INITIALIZED, STARTING, RUNNING, STOPPING, STOPPED }
 }
 
 

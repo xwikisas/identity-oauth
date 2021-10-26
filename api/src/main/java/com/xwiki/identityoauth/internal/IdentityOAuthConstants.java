@@ -121,4 +121,8 @@ public interface IdentityOAuthConstants
      * _CHANGE_ME_LOGIN_URL_.
      */
     String CHANGE_ME_LOGIN_URL = "_CHANGE_ME_LOGIN_URL_";
+    /**
+     * providerHint.
+     */
+    String PROVIDER_HINT = "providerHint";
 }
