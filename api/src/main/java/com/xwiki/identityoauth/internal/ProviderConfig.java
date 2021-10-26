@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.xwiki.rendering.syntax.Syntax;
 
+import com.xwiki.identityoauth.IdentityOAuthProvider;
+
 class ProviderConfig
 {
     private String name;
@@ -31,11 +33,15 @@ class ProviderConfig
 
     private String configPage;
 
-    private Syntax documentSyntax;
+    private Syntax loginCodeSyntax;
 
     private int orderHint;
 
     private Map<String, String> config;
+
+    private String preparedLoginCode;
+
+    private IdentityOAuthProvider provider;
 
     public Map<String, String> getConfig()
     {
@@ -77,14 +83,14 @@ class ProviderConfig
         this.orderHint = orderHint;
     }
 
-    public Syntax getProviderDocumentSyntax()
+    public Syntax getLoginCodeSyntax()
     {
-        return documentSyntax;
+        return loginCodeSyntax;
     }
 
-    public void setDocumentSyntax(Syntax documentSyntax)
+    public void setLoginCodeSyntax(Syntax documentSyntax)
     {
-        this.documentSyntax = documentSyntax;
+        this.loginCodeSyntax = documentSyntax;
     }
 
     public String getConfigPage()
@@ -95,5 +101,25 @@ class ProviderConfig
     public void setConfigPage(String page)
     {
         this.configPage = page;
+    }
+
+    public String getPreparedLoginCode()
+    {
+        return preparedLoginCode;
+    }
+
+    public void setPreparedLoginCode(String preparedLoginCode)
+    {
+        this.preparedLoginCode = preparedLoginCode;
+    }
+
+    public IdentityOAuthProvider getProvider()
+    {
+        return provider;
+    }
+
+    public void setProvider(IdentityOAuthProvider provider)
+    {
+        this.provider = provider;
     }
 }

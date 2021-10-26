@@ -62,6 +62,12 @@ public interface IdentityOAuthProvider
     boolean isActive();
 
     /**
+     * @return true if the provider can be presented among the login options.
+     *           This flag is read at rendering of login pages.
+     */
+    boolean isReady();
+
+    /**
      * @return the short-name of this provider to match UI values
      */
     String getProviderHint();

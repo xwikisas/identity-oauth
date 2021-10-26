@@ -125,17 +125,20 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
             List results = queryManager.createQuery(
                     "from doc.object(IdentityOAuth.OAuthProviderClass) as obj",
                     //"select from doc.object(IdentityOAuth.OAuthProviderClass) as obj",
-                    Query.XWQL).execute();
+                    Query.XWQL).setWiki(contextProvider.get().getMainXWiki()).execute();
             configDocReferences.clear();
             List<ProviderConfig> configs = new LinkedList<>();
+            log.info("Found providers: " + results);
             for (Object r : results) {
                 XWikiDocument doc = contextProvider.get().getWiki().getDocument((String) r, contextProvider.get());
                 BaseObject o = doc.getXObject(getProviderConfigRef(), false, contextProvider.get());
+                log.info("Provider " + o.getStringValue(PROVIDER_HINT));
                 if (o.getIntValue(ACTIVE) != 0) {
+                    log.info("... active");
                     ProviderConfig c = new ProviderConfig();
-                    c.setName(o.getStringValue("providerHint"));
+                    c.setName(o.getStringValue(PROVIDER_HINT));
                     c.setLoginCode(o.getStringValue("loginTemplate"));
-                    c.setDocumentSyntax(doc.getSyntax());
+                    c.setLoginCodeSyntax(doc.getSyntax());
                     c.setConfigPage("configPage");
                     c.setOrderHint(o.getIntValue("orderHint"));
                     DocumentReference configDocRef = documentResolver.resolve(
@@ -230,8 +233,7 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
         return loginUrl;
     }
 
-    void loadAndRebuildProviders(List<String> providersLoginCodes, List<Syntax> providersLoginCodesSyntax,
-            Map<String, IdentityOAuthProvider> providers)
+    List<ProviderConfig> loadAndRebuildProviders()
     {
         List<ProviderConfig> providerConfigs = this.loadProviderConfigs();
         providerConfigs.sort(new Comparator<ProviderConfig>()
@@ -242,25 +244,33 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
                 return Integer.compare(o1.getOrderHint(), o2.getOrderHint());
             }
         });
-        int lastScore = Integer.MIN_VALUE;
-        providersLoginCodes.clear();
-        providersLoginCodesSyntax.clear();
-        providers.clear();
+
+        // insert the XWiki provider in the 0 position
+        int lastOrderHint = Integer.MIN_VALUE;
+        int xwikiPos = providerConfigs.size();
+        for (int i = 0; i < providerConfigs.size(); i++) {
+            int orderHint = providerConfigs.get(i).getOrderHint();
+            if (orderHint > 0 && lastOrderHint <= 0) {
+                xwikiPos = i;
+                break;
+            }
+            lastOrderHint = orderHint;
+        }
+        providerConfigs.add(xwikiPos, createXWikiProviderConfig());
+
+        // initialize the configured providers
         for (ProviderConfig config : providerConfigs) {
             try {
+                if ( XWIKILOGIN.equals(config.getName()) ) {
+                    continue;
+                }
                 IdentityOAuthProvider pr = componentManager.getInstance(
                         IdentityOAuthProvider.class, config.getName());
                 pr.setProviderHint(config.getName());
                 pr.setConfigPage(config.getConfigPage());
                 pr.initialize(config.getConfig());
-                providers.put(config.getName(), pr);
                 if (!pr.isActive()) {
                     continue;
-                }
-                // insert XWIKI at position zero
-                if (config.getOrderHint() > 0 && lastScore <= 0) {
-                    providersLoginCodes.add(XWIKILOGIN);
-                    providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
                 }
                 String loginCode = config.getLoginCode();
                 if (loginCode.contains(BASE64_MARKER)) {
@@ -273,17 +283,22 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
                                 + loginCode.substring(endOfPictName + 2);
                     }
                 }
-                providersLoginCodes.add(loginCode.replaceAll("-PROVIDER-", config.getName()));
-                providersLoginCodesSyntax.add(config.getProviderDocumentSyntax());
-                lastScore = config.getOrderHint();
+                config.setPreparedLoginCode(loginCode.replaceAll("-PROVIDER-", config.getName()));
+                config.setProvider(pr);
             } catch (Exception e) {
                 log.warn("Trouble at creating provider \"" + config.getName() + "\":", e);
             }
         }
-        if (lastScore <= 0) {
-            providersLoginCodes.add(XWIKILOGIN);
-            providersLoginCodesSyntax.add(Syntax.XWIKI_2_1);
-        }
+        return providerConfigs;
+    }
+
+    private ProviderConfig createXWikiProviderConfig()
+    {
+        ProviderConfig conf = new ProviderConfig();
+        conf.setName(XWIKILOGIN);
+        conf.setPreparedLoginCode(XWIKILOGIN);
+        conf.setLoginCodeSyntax(Syntax.XWIKI_2_1);
+        return conf;
     }
 }
 
