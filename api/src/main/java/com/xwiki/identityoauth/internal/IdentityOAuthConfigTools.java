@@ -261,7 +261,7 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
         // initialize the configured providers
         for (ProviderConfig config : providerConfigs) {
             try {
-                if ( XWIKILOGIN.equals(config.getName()) ) {
+                if (XWIKILOGIN.equals(config.getName())) {
                     continue;
                 }
                 IdentityOAuthProvider pr = componentManager.getInstance(
