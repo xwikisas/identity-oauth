@@ -174,7 +174,7 @@ require(['jquery'], function (jQuery) {
     });
     readScopes();
 
-    jQuery("form.xform input").each(()=>{jQuery(this).change(validateAndUpdate)});
+    jQuery("form.xform input").each(function() {jQuery(this).change(validateAndUpdate)});
 
     redirectUrlInput = jQuery(prefix + 'redirectUrl')[0];
     redirectUrlInput.placeholder = window.placeHolderForRedirectUrl;
