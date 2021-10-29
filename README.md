@@ -5,7 +5,7 @@
     [chat]( https://dev.xwiki.org/xwiki/bin/view/Community/Chat),
     [security concerns](http://dev.xwiki.org/xwiki/bin/view/Community/Discuss#HMailingLists)
 * [Development Practices](http://dev.xwiki.org)
-* Minimal XWiki version supported: XWiki 10.11
+* Minimal XWiki version supported: XWiki 11.10
 * License: LGPL 2.1+
 * Translations: (done in the source within the `Translation*.properties` files of [the IdentityOAuth directory](ui/src/main/resources/IdentityOAuth))
 * Sonar Dashboard: N/A
