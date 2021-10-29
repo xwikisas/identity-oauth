@@ -246,16 +246,7 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
         });
 
         // insert the XWiki provider in the 0 position
-        int lastOrderHint = Integer.MIN_VALUE;
-        int xwikiPos = providerConfigs.size();
-        for (int i = 0; i < providerConfigs.size(); i++) {
-            int orderHint = providerConfigs.get(i).getOrderHint();
-            if (orderHint > 0 && lastOrderHint <= 0) {
-                xwikiPos = i;
-                break;
-            }
-            lastOrderHint = orderHint;
-        }
+        int xwikiPos = findZeroPosition(providerConfigs);
         providerConfigs.add(xwikiPos, createXWikiProviderConfig());
 
         // initialize the configured providers
@@ -269,9 +260,7 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
                 pr.setProviderHint(config.getName());
                 pr.setConfigPage(config.getConfigPage());
                 pr.initialize(config.getConfig());
-                if (!pr.isActive()) {
-                    continue;
-                }
+                config.setProvider(pr);
                 String loginCode = config.getLoginCode();
                 if (loginCode.contains(BASE64_MARKER)) {
                     int cursor = -1;
@@ -284,12 +273,24 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
                     }
                 }
                 config.setPreparedLoginCode(loginCode.replaceAll("-PROVIDER-", config.getName()));
-                config.setProvider(pr);
             } catch (Exception e) {
                 log.warn("Trouble at creating provider \"" + config.getName() + "\":", e);
             }
         }
         return providerConfigs;
+    }
+
+    private int findZeroPosition(List<ProviderConfig> providerConfigs)
+    {
+        int xwikiPos = providerConfigs.size();
+        for (int i = 0; i < providerConfigs.size(); i++) {
+            int orderHint = providerConfigs.get(i).getOrderHint();
+            if (orderHint > 0) {
+                xwikiPos = i;
+                break;
+            }
+        }
+        return xwikiPos;
     }
 
     private ProviderConfig createXWikiProviderConfig()

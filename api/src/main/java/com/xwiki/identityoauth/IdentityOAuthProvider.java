@@ -62,7 +62,7 @@ public interface IdentityOAuthProvider
     boolean isActive();
 
     /**
-     * @return true if the provider can be presented among the login options.
+     * @return true if the provider can be presented among the login options and is, generally, ready to operate.
      *           This flag is read at rendering of login pages.
      */
     boolean isReady();

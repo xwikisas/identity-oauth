@@ -76,6 +76,9 @@ public class DefaultIdentityOAuthManager
     @Inject
     private IdentityOAuthUserTools ioUserProc;
 
+    /* The authService is a subclass of XWikiAuthServiceImpl which may be impossible to construct
+    *  at the initialization of this component;
+    *  Thus a provider is injected which lets the authService be built at the application startup event. */
     @Inject
     private Provider<IdentityOAuthAuthService> authServiceProvider;
 
@@ -115,7 +118,7 @@ public class DefaultIdentityOAuthManager
         lifeCycleState = lf;
     }
 
-    private void startIfNeedBe()
+    private void startIfNeedBe(boolean completeWithProviders)
     {
         if (lifeCycleState == LifeCycle.RUNNING) {
             return;
@@ -128,7 +131,9 @@ public class DefaultIdentityOAuthManager
 
         try {
             log.debug("Starting...");
-            rebuildProviders();
+            if (completeWithProviders) {
+                rebuildProviders();
+            }
             tryInittingAuthService();
         } catch (Exception e) {
             e.printStackTrace();
@@ -192,7 +197,7 @@ public class DefaultIdentityOAuthManager
 
     void rebuildProviders()
     {
-
+        providers.clear();
         providerConfigs = ioConfigObjects.loadAndRebuildProviders();
         for (ProviderConfig config : providerConfigs) {
             providers.put(config.getName(), config.getProvider());
@@ -206,7 +211,7 @@ public class DefaultIdentityOAuthManager
      */
     public List<String> renderLoginCodes()
     {
-        startIfNeedBe();
+        startIfNeedBe(true);
         List<String> renderedLoginCodes = new ArrayList<>(providerConfigs.size());
         for (ProviderConfig config : providerConfigs) {
             try {
@@ -219,7 +224,11 @@ public class DefaultIdentityOAuthManager
                         WikiPrinter printer = new DefaultWikiPrinter();
                         converter.convert(new StringReader(loginCode),
                                 config.getLoginCodeSyntax(), Syntax.XHTML_1_0, printer);
-                        renderedLoginCodes.add(printer.toString());
+                        renderedLoginCodes.add(
+                                "<!-- IdentityOAuth Provider: " + config.getName() + " -->\r\n" + printer.toString());
+                    } else {
+                        renderedLoginCodes.add(
+                                "<!-- IdentityOAuth Provider:  " + config.getName() + " not ready -->\r\n");
                     }
                 }
             } catch (Exception e) {
@@ -245,7 +254,7 @@ public class DefaultIdentityOAuthManager
      */
     public void reloadConfig()
     {
-        startIfNeedBe();
+        startIfNeedBe(false);
         log.info("Reloading config.");
         rebuildProviders();
     }
@@ -260,6 +269,10 @@ public class DefaultIdentityOAuthManager
         }
         if (!provider.isActive()) {
             throw new IdentityOAuthException("The provider \"" + provider + "\" is inactive.");
+        }
+        if (!provider.isReady()) {
+            throw new IdentityOAuthException(
+                    "The provider  \"" + provider + "\" is not ready (probably a missing license).");
         }
         return provider;
     }
