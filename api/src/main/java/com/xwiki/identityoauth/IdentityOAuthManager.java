@@ -46,6 +46,18 @@ public interface IdentityOAuthManager
     boolean processOAuthStart() throws IdentityOAuthException;
 
     /**
+     * Called to express links that invite the user to start an OAuth flow
+     * e.g. to add an extra feature. The user should not be invited to choose
+     * the provider but may need to give her authorization.
+     *
+     * @param provider the provider that we expect will process the return of this URL if followed.
+     * @return the URL to redirect to (which may include a redirect to the current URL).
+     * @since 1.0
+     */
+    @Unstable
+    String getOAuthStartUrl(IdentityOAuthProvider provider);
+
+    /**
      * Performs the necessary communication with OAuth provider to fetch identity and update the XWiki-user object.
      *
      * @return "failed login" if failed, "no user", or "ok" if successful

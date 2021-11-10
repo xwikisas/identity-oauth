@@ -14,12 +14,11 @@
   #macro (ioIncludeUIX)
     $xwiki.jsx.use('IdentityOAuth.IdentityOAuthConfigClass')
     $xwiki.ssx.use('IdentityOAuth.IdentityOAuthConfigClass')
-    #set($myTranslationPrefix='IdentityOAuth.IdentityOAuthConfigClass_')
   #end
 
 
   ## defines formId, propNamePrefixIO, propNamePrefixO, configDoc, objIO, objO
-  #macro (initConfigObjects $configDocName $extraObjectClassPropPrefixes $translationPrefixP)
+  #macro (initConfigObjects $configDocName $extraObjectClassPropPrefixes $translationPrefixesP)
     #set($formId = "${section.toLowerCase()}_${configDocName1}")
     #set($configDoc = $xwiki.getDocument($configDocName))
 
@@ -27,7 +26,12 @@
     #set($propNamePrefixIO="${configDoc.fullName}_${classNameIO}_0")
     #set($objIO = $configDoc.getObject($classNameIO))
 
-    #set($translationPrefix = $translationPrefixP)
+    #set($translationPrefixes = [])
+    #foreach($p in $translationPrefixesP)
+      #set($nuts=$translationPrefixes.add($p))
+    #end
+    #set($nuts=$translationPrefixes.add('IdentityOAuth.IdentityOAuthConfigClass_'))
+
     #foreach($x in $extraObjectClassPropPrefixes)
       #set($shhh = $x.add($x[0]))
       #set($x[0] = $configDoc.getObject($x[0]))
@@ -36,15 +40,21 @@
 
 
   ## t: shorthand for translation
-  ## TODO: this only works from xwiki 10.2... fork for xwiki 9?
+  #macro (alignWithTranslationPrefixes $name)
+    #set($tn = [])
+    #foreach($p in $translationPrefixes)
+      #set($nuts=$tn.add("${p}${name}"))
+    #end
+  #end
   #macro (t $name)
-    $services.localization.render(["${translationPrefix}${name}", "${myTranslationPrefix}${name}"])
+    #alignWithTranslationPrefixes($name)
+    $services.localization.render($tn)
   #end
 
   ## tp: shorthand for translation with parameters
   #macro (tp $name $params)##
-    #set ($msg = $services.localization.render(["${translationPrefix}${name}",
-      "${myTranslationPrefix}${name}"],$params))##
+    #alignWithTranslationPrefixes($name)
+    #set ($msg = $services.localization.render($tn,$params))##
     ## convert to <a href="link">link-text</a> for the simple wiki syntax of links
     $stringtool.replacePattern($msg, '\[\[([^>]*)>>([^\]]*)\]\]', '<a href="$2">$1</a>')##
   #end

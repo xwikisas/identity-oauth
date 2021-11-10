@@ -304,6 +304,9 @@ public class DefaultIdentityOAuthManager
             // populate sessionInfo with fresh data
             sessionInfoProvider.get().clear(providerHint);
             String xredirect = request.getParameter("xredirect");
+            if (oauthBackPage == null) {
+                oauthBackPage = getOAuthStartUrl(getProvider(providerHint));
+            }
             if (xredirect == null) {
                 // xredirect will be the home
                 xredirect = oauthBackPage.replace("/(login/XWiki/XWikiLogin).*", "/");
@@ -332,6 +335,26 @@ public class DefaultIdentityOAuthManager
             log.warn("Trouble at authorizing", ex);
             return false;
         }
+    }
+
+    /**
+     * Called to express links that invite the user to start an OAuth flow
+     * e.g. to add an extra feature. The user should not be invited to choose
+     * the provider but may need to give her authorization.
+     *
+     * @param provider the provider that we expect will process the return of this URL if followed.
+     * @return the URL to redirect to (which may include a redirect to the current URL).
+     * @since 1.1
+     */
+    public String getOAuthStartUrl(IdentityOAuthProvider provider)
+    {
+        String p = ioConfigObjects.getLoginPageUrl();
+        if (!p.contains("?")) {
+            p += '?';
+        }
+        p += "provider=" + provider.getProviderHint()
+                + "&identityOAuth=start";
+        return p;
     }
 
     /**
@@ -424,7 +447,7 @@ public class DefaultIdentityOAuthManager
         if (provider == null) {
             return;
         }
-        provider.receiveFreshToken(sessionInfoProvider.get().getAuthorizationCode(providerHint));
+        provider.receiveFreshToken(sessionInfoProvider.get().getToken(providerHint));
     }
 
     enum LifeCycle
