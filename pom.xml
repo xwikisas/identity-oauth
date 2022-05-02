@@ -27,7 +27,7 @@
 
   <groupId>com.xwiki.identity-oauth</groupId>
   <artifactId>identity-oauth-parent</artifactId>
-  <version>1.5-SNAPSHOT</version>
+  <version>1.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Identity OAuth (pro) parent POM</name>
