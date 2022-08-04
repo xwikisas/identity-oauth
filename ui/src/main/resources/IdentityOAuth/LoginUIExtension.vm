@@ -90,7 +90,9 @@
     </script>
     #else
     <script type="text/javascript">
-      // Identity OAuth Login Extension: Button: offer a button to go to the provider)
+      // Identity OAuth Login Extension: Button: offer a button to go to the provider. Don't alter the login if no other
+      // providers are defined.
+      #if($hasSeveralLogins)
         document.addEventListener('DOMContentLoaded', function() {
           require(['jquery', 'xwiki-events-bridge', 'xwiki-meta'], function($, xm) {
             window.loginWithXWiki = function() {
@@ -114,14 +116,14 @@
               var loginCode = "${escapetool.javascript($loginCodes)}";
               loginCode = loginCode.replace("-URL-",url);
               jQuery(loginCode).insertBefore(jQuery(".panel .panel-body dl"));
-              #if($hasSeveralLogins)
-                  if (XWiki.contextaction != "loginsubmit") {
-                      jQuery(".panel .panel-body dl").hide();
-                  }
-              #end
+
+              if (XWiki.contextaction != "loginsubmit") {
+                jQuery(".panel .panel-body dl").hide();
+              }
             }
           }); // end requirejs
         });
+      #end
     </script>
     #end ## if ($successMsg || $errorMsg)
   {{/html}}
