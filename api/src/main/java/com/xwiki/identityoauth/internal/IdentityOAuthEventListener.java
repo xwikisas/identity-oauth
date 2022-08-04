@@ -61,7 +61,7 @@ public class IdentityOAuthEventListener extends AbstractEventListener
      */
     public IdentityOAuthEventListener()
     {
-        super(NAME, new ApplicationReadyEvent(), new DocumentUpdatedEvent());
+        super(NAME, new ApplicationReadyEvent(), new DocumentUpdatedEvent(), new DocumentDeletedEvent());
     }
 
     /**
