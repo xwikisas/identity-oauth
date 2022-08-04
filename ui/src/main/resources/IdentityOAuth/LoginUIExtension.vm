@@ -88,42 +88,40 @@
         c.insertBefore(div, c.firstChild);
       });
     </script>
-    #else
+    #elseif($hasSeveralLogins)
     <script type="text/javascript">
       // Identity OAuth Login Extension: Button: offer a button to go to the provider. Don't alter the login if no other
       // providers are defined.
-      #if($hasSeveralLogins)
-        document.addEventListener('DOMContentLoaded', function() {
-          require(['jquery', 'xwiki-events-bridge', 'xwiki-meta'], function($, xm) {
-            window.loginWithXWiki = function() {
-                jQuery(".panel .panel-body dl").show()
-                return false;
+      document.addEventListener('DOMContentLoaded', function() {
+        require(['jquery', 'xwiki-events-bridge', 'xwiki-meta'], function($, xm) {
+          window.loginWithXWiki = function() {
+              jQuery(".panel .panel-body dl").show()
+              return false;
+          }
+          if (XWiki.contextaction == "login" || XWiki.contextaction == "loginsubmit" ) {
+            var url = location.href, baseUrl = url;
+            if (url.indexOf('?') < 0){
+                url=url+'?';
+            } else {
+                baseUrl = url.substring(0, url.indexOf('?'));
             }
-            if (XWiki.contextaction == "login" || XWiki.contextaction == "loginsubmit" ) {
-              var url = location.href, baseUrl = url;
-              if (url.indexOf('?') < 0){
-                  url=url+'?';
-              } else {
-                  baseUrl = url.substring(0, url.indexOf('?'));
-              }
-              if (url.indexOf('identityOAuth=')>=0) {
-                  url = url.replace(/identityOAuth=[a-zA-Z]*/, "identityOAuth=start");
-              } else {
-                  url = url + "&identityOAuth=start";
-              }
-              url = url + "&browserLocation=" + escape(baseUrl);
-
-              var loginCode = "${escapetool.javascript($loginCodes)}";
-              loginCode = loginCode.replace("-URL-",url);
-              jQuery(loginCode).insertBefore(jQuery(".panel .panel-body dl"));
-
-              if (XWiki.contextaction != "loginsubmit") {
-                jQuery(".panel .panel-body dl").hide();
-              }
+            if (url.indexOf('identityOAuth=')>=0) {
+                url = url.replace(/identityOAuth=[a-zA-Z]*/, "identityOAuth=start");
+            } else {
+                url = url + "&identityOAuth=start";
             }
-          }); // end requirejs
-        });
-      #end
+            url = url + "&browserLocation=" + escape(baseUrl);
+
+            var loginCode = "${escapetool.javascript($loginCodes)}";
+            loginCode = loginCode.replace("-URL-",url);
+            jQuery(loginCode).insertBefore(jQuery(".panel .panel-body dl"));
+
+            if (XWiki.contextaction != "loginsubmit") {
+              jQuery(".panel .panel-body dl").hide();
+            }
+          }
+        }); // end requirejs
+      });
     </script>
     #end ## if ($successMsg || $errorMsg)
   {{/html}}
