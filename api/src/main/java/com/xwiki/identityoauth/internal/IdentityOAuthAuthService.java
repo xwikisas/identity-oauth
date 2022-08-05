@@ -21,18 +21,14 @@ package com.xwiki.identityoauth.internal;
 
 import java.net.URLEncoder;
 import java.security.Principal;
-import java.util.regex.Pattern;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.securityfilter.realm.SimplePrincipal;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.container.servlet.filters.SavedRequestManager;
 import org.xwiki.context.Execution;
 import org.xwiki.text.StringUtils;
@@ -52,7 +48,7 @@ import com.xpn.xwiki.web.XWikiRequest;
  */
 @Component(roles = IdentityOAuthAuthService.class)
 @Singleton
-public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements Initializable
+public class IdentityOAuthAuthService extends XWikiAuthServiceImpl
 {
     private static final String XWIKISPACE = "XWiki.";
 
@@ -66,22 +62,7 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
     private CookieAuthenticationPersistence cookiePersistance;
 
     @Inject
-    @Named("xwikicfg")
-    private Provider<ConfigurationSource> xwikiCfg;
-
-    private Pattern logoutRequestMatcher;
-
-    @Inject
     private Execution execution;
-
-    /**
-     * Reads the configuration.
-     */
-    public void initialize()
-    {
-        this.logoutRequestMatcher = Pattern.compile(
-                xwikiCfg.get().getProperty("xwiki.authentication.logoutpage", ""));
-    }
 
     /**
      * Evaluates if the user can be authenticated based on request info such as cookies.
@@ -95,7 +76,7 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
         try {
             log.debug("checkAuth");
             IdentityOAuthSessionInfo sessionInfo = sessionInfoProvider.get();
-            if (isLogoutRequest(context)) {
+            if (context.getAction().equals("logout")) {
                 log.info("caught a logout request");
                 cookiePersistance.clear();
                 sessionInfo.clear(null);
@@ -199,13 +180,5 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl implements In
             }
             log.info("IdentityOAuth authentificator - showLogin end");
         }
-    }
-
-    /**
-     * @return true if the current request match the configured logout page pattern.
-     */
-    private boolean isLogoutRequest(XWikiContext context)
-    {
-        return logoutRequestMatcher.matcher(context.getRequest().getPathInfo()).matches();
     }
 }
