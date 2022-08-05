@@ -66,6 +66,8 @@ public class CookieAuthenticationPersistence implements Initializable
 
     private static final String ENCRYPTION_KEY_PROPERTY = AUTHENTICATION_CONFIG_PREFIX + ".encryptionKey";
 
+    private static final String XWIKI_ENCRYPTION_KEY_PROPERTY = "xwiki.authentication.encryptionKey";
+
     private static final String CIPHER_ALGORITHM = "TripleDES";
 
     private static final String AUTHENTICATION_COOKIE = "XWIKITRUSTEDAUTH";
@@ -111,7 +113,12 @@ public class CookieAuthenticationPersistence implements Initializable
     {
         this.cookiePrefix = xwikiCfg.getProperty(COOKIE_PREFIX_PROPERTY, "");
         this.cookiePath = xwikiCfg.getProperty(COOKIE_PATH_PROPERTY, "/");
+
         this.encryptionKey = xwikiCfg.getProperty(ENCRYPTION_KEY_PROPERTY);
+        // In case the property was not defined, fall back on the XWiki encryption key property value.
+        if (this.encryptionKey == null) {
+            this.encryptionKey = xwikiCfg.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY);
+        }
 
         String[] cdlist = StringUtils.split(xwikiCfg.getProperty(COOKIE_DOMAINS_PROPERTY), ',');
 
@@ -177,15 +184,17 @@ public class CookieAuthenticationPersistence implements Initializable
     }
 
     private Cipher getCipher(boolean encrypt)
-            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException
+        throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IdentityOAuthException
     {
-        Cipher cipher = null;
+        Cipher cipher;
         String secretKey = encryptionKey;
         if (secretKey != null) {
             secretKey = secretKey.substring(0, 24);
             SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), CIPHER_ALGORITHM);
             cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, key);
+        } else {
+            throw new IdentityOAuthException("Unable to initialize cipher.");
         }
         return cipher;
     }
@@ -199,8 +208,8 @@ public class CookieAuthenticationPersistence implements Initializable
             logger.debug("encrypted text : " + encryptedText);
             return encryptedText;
         } catch (Exception e) {
-            logger.error("Failed to encrypt text", e);
-            return null;
+            logger.error("Failed to encrypt text.", e);
+            return text;
         }
     }
 
@@ -217,8 +226,8 @@ public class CookieAuthenticationPersistence implements Initializable
             logger.debug("decrypted text : " + decryptedText);
             return decryptedText;
         } catch (Exception e) {
-            logger.error("Failed to decrypt text", e);
-            return null;
+            logger.error("Failed to decrypt text.", e);
+            return text;
         }
     }
 
