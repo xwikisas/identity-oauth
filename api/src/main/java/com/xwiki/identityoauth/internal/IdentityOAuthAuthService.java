@@ -81,7 +81,6 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl
                 cookiePersistance.clear();
                 sessionInfo.clear(null);
                 log.info("cleared cookie");
-                return null;
             }
             return super.checkAuth(context);
         } catch (Exception e) {
