@@ -37,6 +37,7 @@ import org.xwiki.contrib.oidc.auth.store.OIDCUserStore;
 import org.xwiki.model.reference.AttachmentReferenceResolver;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
 import org.xwiki.stability.Unstable;
@@ -76,6 +77,9 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
     private DocumentReferenceResolver<String> documentResolver;
 
     @Inject
+    private EntityReferenceSerializer<String> serializer;
+
+    @Inject
     private AttachmentReferenceResolver<String> attachmentResolver;
 
     @Inject
@@ -102,7 +106,7 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
         } else {
             xwikiUser = createUser(id, provider, token);
         }
-        return xwikiUser.getDocumentReference().getName();
+        return serializer.serialize(xwikiUser.getDocumentReference());
     }
 
     private XWikiDocument findExistingUser(IdentityOAuthProvider.AbstractIdentityDescription id)
