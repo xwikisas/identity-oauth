@@ -50,8 +50,6 @@ import com.xpn.xwiki.web.XWikiRequest;
 @Singleton
 public class IdentityOAuthAuthService extends XWikiAuthServiceImpl
 {
-    private static final String XWIKISPACE = "XWiki.";
-
     @Inject
     private Logger log;
 
@@ -109,9 +107,6 @@ public class IdentityOAuthAuthService extends XWikiAuthServiceImpl
             if (userToLogin != null) {
                 log.debug("User to login found.");
                 sessionInfo.setUserToLogIn(null);
-                if (!userToLogin.startsWith(XWIKISPACE)) {
-                    userToLogin = XWIKISPACE + userToLogin;
-                }
                 log.debug("Authenticating user " + userToLogin);
                 return new SimplePrincipal(userToLogin);
             } else {
