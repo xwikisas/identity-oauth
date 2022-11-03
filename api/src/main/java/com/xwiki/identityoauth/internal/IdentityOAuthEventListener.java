@@ -84,19 +84,18 @@ public class IdentityOAuthEventListener extends AbstractEventListener
         if (log.isDebugEnabled()) {
             log.debug("Event! " + event + " from " + source);
         }
-        boolean isManagerInitialized = false;
-        boolean configChanged = false;
+        boolean reloadConfig = false;
         if (event instanceof ApplicationReadyEvent || event instanceof ComponentDescriptorAddedEvent) {
-            isManagerInitialized = true;
+            reloadConfig = true;
         }
         if (event instanceof DocumentUpdatedEvent || event instanceof DocumentDeletedEvent) {
             XWikiDocument document = (XWikiDocument) source;
             if (document != null && ioXWikiObjects.hasIOConfigObject(document)) {
-                configChanged = true;
+                reloadConfig = true;
             }
         }
 
-        if (configChanged || isManagerInitialized) {
+        if (reloadConfig) {
             log.info("Reloading IdentityOAuth providers! ");
             identityOAuthManager.reloadConfig();
         }
