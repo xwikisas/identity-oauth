@@ -28,14 +28,19 @@ import org.xwiki.bridge.event.ApplicationReadyEvent;
 import org.xwiki.bridge.event.DocumentDeletedEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.event.ComponentDescriptorAddedEvent;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xwiki.identityoauth.IdentityOAuthManager;
+import com.xwiki.identityoauth.IdentityOAuthProvider;
 
 /**
- * Registered object to listen to document changes.
+ * Initialize identity oauth configurations when the application is started. Reload saved configurations when
+ * identity oauth configuration objects are modified. Reload also when IdentityOAuthProvider components are registered
+ * since these are re-initialized when the classloader is recreated (e.g. after a jar extension uninstall or update
+ * event).
  *
  * @version $Id$
  * @since 1.0
@@ -61,12 +66,13 @@ public class IdentityOAuthEventListener extends AbstractEventListener
      */
     public IdentityOAuthEventListener()
     {
-        super(NAME, new ApplicationReadyEvent(), new DocumentUpdatedEvent(), new DocumentDeletedEvent());
+        super(NAME, new ApplicationReadyEvent(), new DocumentUpdatedEvent(), new DocumentDeletedEvent(),
+            new ComponentDescriptorAddedEvent(IdentityOAuthProvider.class));
     }
 
     /**
-     * Triggers a configuration reload (if the configuration is changed or the app is started) or an initialization (if
-     * the app is started).
+     * Triggers a configuration reload (if the configuration is changed, the app is started or providers are
+     * initialized) or an initialization (if the app is started).
      *
      * @param event  The event listened to.
      * @param source The object sending the event.
@@ -78,19 +84,18 @@ public class IdentityOAuthEventListener extends AbstractEventListener
         if (log.isDebugEnabled()) {
             log.debug("Event! " + event + " from " + source);
         }
-        boolean applicationStarted = false;
-        boolean configChanged = false;
-        if (event instanceof ApplicationReadyEvent) {
-            applicationStarted = true;
+        boolean reloadConfig = false;
+        if (event instanceof ApplicationReadyEvent || event instanceof ComponentDescriptorAddedEvent) {
+            reloadConfig = true;
         }
         if (event instanceof DocumentUpdatedEvent || event instanceof DocumentDeletedEvent) {
             XWikiDocument document = (XWikiDocument) source;
             if (document != null && ioXWikiObjects.hasIOConfigObject(document)) {
-                configChanged = true;
+                reloadConfig = true;
             }
         }
 
-        if (configChanged || applicationStarted) {
+        if (reloadConfig) {
             log.info("Reloading IdentityOAuth providers! ");
             identityOAuthManager.reloadConfig();
         }

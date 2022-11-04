@@ -33,7 +33,7 @@ import com.xpn.xwiki.XWikiContext;
  *
  * @version $Id$
  * @since 1.0
- * */
+ */
 @Component
 @Singleton
 public class IdentityOAuthSessionInfoProvider implements Provider<IdentityOAuthSessionInfo>
@@ -41,15 +41,19 @@ public class IdentityOAuthSessionInfoProvider implements Provider<IdentityOAuthS
     @Inject
     private Provider<XWikiContext> contextProvider;
 
-    @Override public IdentityOAuthSessionInfo get()
+    @Override
+    public IdentityOAuthSessionInfo get()
     {
         String sessKey = IdentityOAuthSessionInfo.class.getName();
         HttpSession session = contextProvider.get().getRequest().getSession();
-        IdentityOAuthSessionInfo si = (IdentityOAuthSessionInfo) session.getAttribute(sessKey);
-        if (si == null) {
+        Object si = session.getAttribute(sessKey);
+        // When the classloader is recreated and components are re-initialized, an IdentityOAuthSessionInfo object
+        // using the old class is stored on the session.
+        if (!(si instanceof IdentityOAuthSessionInfo)) {
             si = new IdentityOAuthSessionInfo();
             session.setAttribute(sessKey, si);
         }
-        return si;
+
+        return (IdentityOAuthSessionInfo) si;
     }
 }
