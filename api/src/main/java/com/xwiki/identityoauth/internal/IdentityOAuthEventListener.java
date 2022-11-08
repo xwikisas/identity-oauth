@@ -21,6 +21,7 @@ package com.xwiki.identityoauth.internal;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import org.xwiki.component.event.ComponentDescriptorAddedEvent;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xwiki.identityoauth.IdentityOAuthManager;
 import com.xwiki.identityoauth.IdentityOAuthProvider;
@@ -61,6 +63,9 @@ public class IdentityOAuthEventListener extends AbstractEventListener
     @Inject
     private Logger log;
 
+    @Inject
+    private Provider<XWikiContext> contextProvider;
+
     /**
      * Creates an event-listener filtering for ApplicationReadyEvent and DocumentUpdatedEvent.
      */
@@ -85,7 +90,10 @@ public class IdentityOAuthEventListener extends AbstractEventListener
             log.debug("Event! " + event + " from " + source);
         }
         boolean reloadConfig = false;
-        if (event instanceof ApplicationReadyEvent || event instanceof ComponentDescriptorAddedEvent) {
+        // Since ComponentDescriptorAddedEvent is fired also before the application is ready, the reloading is not
+        // triggered for this event at XWiki start time.
+        if (event instanceof ApplicationReadyEvent || (event instanceof ComponentDescriptorAddedEvent
+            && this.contextProvider.get() != null)) {
             reloadConfig = true;
         }
         if (event instanceof DocumentUpdatedEvent || event instanceof DocumentDeletedEvent) {
