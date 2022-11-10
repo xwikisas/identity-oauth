@@ -39,10 +39,10 @@ import com.xwiki.identityoauth.IdentityOAuthProvider;
 import com.xwiki.licensing.Licensor;
 
 /**
- * Default implementation.
+ * IdentityOAuthProvider implementation specific to the XWiki default login action.
  *
- * @since 1.5
  * @version $Id$
+ * @since 1.5
  */
 @Component
 @Named(DefaultIdentityOAuthProvider.PROVIDER_HINT)

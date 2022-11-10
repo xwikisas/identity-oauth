@@ -41,7 +41,7 @@
         #end
       #end
     #elseif ($request.identityOAuth == "start")
-      ## add check for XWiki, to not do anything.
+      ## Don't alter the login form in case the XWiki default implementation is requested.
       #if ("$!request.provider" != "default")
         #set($statusMsg = "IdentityOAuth Start login, should bounce to the provider.")
         #set($succesMsg = $services.localization.render("idoauth.login.oauth.message"))
@@ -58,8 +58,6 @@
       #end
     #elseif ($request.identityOAuth)
       #set($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
-    #elseif ("$!request.loginWithXWiki" == "true")
-      ## Do nothing, so the default XWiki login page is displayed.
     #else
       #set($statusMsg = "Login page")
       ## assemble the login code from the providers
