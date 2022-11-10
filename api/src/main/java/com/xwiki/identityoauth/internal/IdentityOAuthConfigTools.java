@@ -44,7 +44,6 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.ObjectReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
-import org.xwiki.rendering.syntax.Syntax;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -245,18 +244,10 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
             }
         });
 
-        // insert the XWiki provider in the 0 position
-        int xwikiPos = findZeroPosition(providerConfigs);
-        providerConfigs.add(xwikiPos, createXWikiProviderConfig());
-
         // initialize the configured providers
         for (ProviderConfig config : providerConfigs) {
             try {
-                if (XWIKILOGIN.equals(config.getName())) {
-                    continue;
-                }
-                IdentityOAuthProvider pr = componentManager.getInstance(
-                        IdentityOAuthProvider.class, config.getName());
+                IdentityOAuthProvider pr = componentManager.getInstance(IdentityOAuthProvider.class, config.getName());
                 pr.setProviderHint(config.getName());
                 pr.setConfigPage(config.getConfigPage());
                 pr.initialize(config.getConfig());
@@ -278,28 +269,6 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
             }
         }
         return providerConfigs;
-    }
-
-    private int findZeroPosition(List<ProviderConfig> providerConfigs)
-    {
-        int xwikiPos = providerConfigs.size();
-        for (int i = 0; i < providerConfigs.size(); i++) {
-            int orderHint = providerConfigs.get(i).getOrderHint();
-            if (orderHint > 0) {
-                xwikiPos = i;
-                break;
-            }
-        }
-        return xwikiPos;
-    }
-
-    private ProviderConfig createXWikiProviderConfig()
-    {
-        ProviderConfig conf = new ProviderConfig();
-        conf.setName(XWIKILOGIN);
-        conf.setPreparedLoginCode(XWIKILOGIN);
-        conf.setLoginCodeSyntax(Syntax.XWIKI_2_1);
-        return conf;
     }
 }
 

@@ -216,20 +216,16 @@ public class DefaultIdentityOAuthManager
         for (ProviderConfig config : providerConfigs) {
             try {
                 String loginCode = config.getPreparedLoginCode();
-                if (XWIKILOGIN.equals(loginCode)) {
-                    renderedLoginCodes.add(loginCode);
+                // Convert input in XWiki Syntax 2.1 into XHTML. The result is stored in the printer.
+                if (config.getProvider().isReady()) {
+                    WikiPrinter printer = new DefaultWikiPrinter();
+                    converter.convert(new StringReader(loginCode),
+                        config.getLoginCodeSyntax(), Syntax.XHTML_1_0, printer);
+                    renderedLoginCodes.add(
+                        "<!-- IdentityOAuth Provider: " + config.getName() + " -->\r\n" + printer.toString());
                 } else {
-                    // Convert input in XWiki Syntax 2.1 into XHTML. The result is stored in the printer.
-                    if (config.getProvider().isReady()) {
-                        WikiPrinter printer = new DefaultWikiPrinter();
-                        converter.convert(new StringReader(loginCode),
-                                config.getLoginCodeSyntax(), Syntax.XHTML_1_0, printer);
-                        renderedLoginCodes.add(
-                                "<!-- IdentityOAuth Provider: " + config.getName() + " -->\r\n" + printer.toString());
-                    } else {
-                        renderedLoginCodes.add(
-                                "<!-- IdentityOAuth Provider:  " + config.getName() + " not ready -->\r\n");
-                    }
+                    renderedLoginCodes.add(
+                        "<!-- IdentityOAuth Provider:  " + config.getName() + " not ready -->\r\n");
                 }
             } catch (Exception e) {
                 renderedLoginCodes.add("BROKEN RENDERING " + config.getName());

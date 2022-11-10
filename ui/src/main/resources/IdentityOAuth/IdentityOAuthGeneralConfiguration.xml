@@ -35,15 +35,15 @@
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>false</hidden>
+  <hidden>true</hidden>
   <content/>
   <object>
     <name>IdentityOAuth.IdentityOAuthGeneralConfiguration</name>
     <number>0</number>
-    <className>IdentityOAuth.IdentityOAuthGeneralConfigClass</className>
-    <guid>38036f31-d85e-4010-83e6-dd36271c41c4</guid>
+    <className>IdentityOAuth.OAuthProviderClass</className>
+    <guid>33335821-1e48-4e4a-a440-3cc39cf16c35</guid>
     <class>
-      <name>IdentityOAuth.IdentityOAuthGeneralConfigClass</name>
+      <name>IdentityOAuth.OAuthProviderClass</name>
       <customClass/>
       <customMapping/>
       <defaultViewSheet/>
@@ -51,24 +51,116 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <displayXWikiLogin>
+      <active>
         <customDisplay/>
-        <defaultValue>1</defaultValue>
+        <defaultValue/>
         <disabled>0</disabled>
-        <displayFormType>select</displayFormType>
+        <displayFormType>checkbox</displayFormType>
         <displayType/>
         <hint/>
-        <name>displayXWikiLogin</name>
-        <number>1</number>
-        <prettyName>Display XWiki Login</prettyName>
+        <name>active</name>
+        <number>9</number>
+        <prettyName>active</prettyName>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </displayXWikiLogin>
+      </active>
+      <configurationObjectsPage>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <freeText/>
+        <hint/>
+        <idField/>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>configurationObjectsPage</name>
+        <number>4</number>
+        <picker>1</picker>
+        <prettyName>configurationObjectsPage</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>1</size>
+        <sort/>
+        <sql/>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.PageClass</classType>
+      </configurationObjectsPage>
+      <loginTemplate>
+        <contenttype>---</contenttype>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>---</editor>
+        <hint/>
+        <name>loginTemplate</name>
+        <number>2</number>
+        <picker>1</picker>
+        <prettyName>loginTemplate</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </loginTemplate>
+      <orderHint>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <hint/>
+        <name>orderHint</name>
+        <number>4</number>
+        <numberType>long</numberType>
+        <prettyName>orderHint</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
+      </orderHint>
+      <providerHint>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <hint/>
+        <name>providerHint</name>
+        <number>1</number>
+        <picker>1</picker>
+        <prettyName>providerHint</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </providerHint>
     </class>
     <property>
-      <displayXWikiLogin>1</displayXWikiLogin>
+      <active>1</active>
+    </property>
+    <property>
+      <configurationObjectsPage>IdentityOAuth.DefaultOAuthConfig</configurationObjectsPage>
+    </property>
+    <property>
+      <loginTemplate>{{velocity}}
+{{html clean=false}}
+&lt;a href='#' onclick='return loginWithXWiki();' class='btn providerLoginButton'&gt;
+  &lt;img src="$xwiki.getSkinFile('icons/xwiki/favicon.ico')"&gt;
+  $escapetool.xml($services.localization.render('idoauth.login.withxwiki'))
+&lt;/a&gt;
+{{/html}}
+{{/velocity}}</loginTemplate>
+    </property>
+    <property>
+      <orderHint/>
+    </property>
+    <property>
+      <providerHint>default</providerHint>
     </property>
   </object>
   <object>
@@ -269,10 +361,10 @@
       <categoryIcon/>
     </property>
     <property>
-      <codeToExecute/>
+      <codeToExecute>{{include reference="IdentityOAuth.IdentityOAuthGeneralConfigSheet" /}}</codeToExecute>
     </property>
     <property>
-      <configurationClass>IdentityOAuth.IdentityOAuthGeneralConfigClass</configurationClass>
+      <configurationClass/>
     </property>
     <property>
       <configureGlobally>1</configureGlobally>

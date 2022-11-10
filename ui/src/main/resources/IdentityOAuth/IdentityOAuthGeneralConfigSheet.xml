@@ -1,0 +1,98 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.3" reference="IdentityOAuth.IdentityOAuthGeneralConfigSheet" locale="">
+  <web>IdentityOAuth</web>
+  <name>IdentityOAuthGeneralConfigSheet</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <parent>IdentityOAuth.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <version>1.1</version>
+  <title>IdentityOAuthGeneralConfigSheet</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{velocity output="false"}}
+#macro (stripHTMLMacro $displayOutput)
+  $stringtool.removeEnd($stringtool.removeStart($displayOutput, '{{html clean="false" wiki="false"}}'), '{{/html}}')
+#end
+#macro (showProperty $configDoc $configClassName $propertyName)
+  #set ($discard = $configDoc.use($identityOAuthProviderClassName))
+  #set ($configClass = $xwiki.getDocument($identityOAuthProviderClassName))
+  #set ($xclass = $configClass.getxWikiClass())
+  &lt;dl&gt;
+    &lt;dt&gt;
+      #set ($propertyClass = $xclass.get($propertyName))
+      &lt;label#if ($editing) for="${configClassName}_0_${propertyName}"#end&gt;
+        $escapetool.xml($propertyClass.translatedPrettyName)
+      &lt;/label&gt;
+      #set ($hint = $propertyClass.hint)
+      #if ("$!hint" == '')
+        #set ($hint = $services.localization.render("${configClassName}_${propertyName}.hint"))
+      #end
+      &lt;span class="xHint"&gt;$escapetool.xml($hint)&lt;/span&gt;
+    &lt;/dt&gt;
+    #set ($displayOutput = $configDoc.display($propertyName, $mode))
+    &lt;dd&gt;#stripHTMLMacro($displayOutput)&lt;/dd&gt;
+  &lt;/dl&gt;
+#end
+{{/velocity}}
+
+{{velocity}}
+## A custom configuration sheet is used since this configuration will be used for properties of different classes.
+#if(!$xwiki.hasAdminRights())
+  Admin rights are needed.
+#else
+  #set ($identityOAuthProviderClassName = 'IdentityOAuth.OAuthProviderClass')
+  #set ($configDoc = $xwiki.getDocument('IdentityOAuth.IdentityOAuthGeneralConfiguration'))
+  #set ($editing = $xcontext.action == 'edit' || $xcontext.action == 'admin')
+  #set ($mode = "#if ($editing)edit#{else}view#end")
+  {{html clean="false"}}
+  #if ($xcontext.action == 'admin')
+    &lt;form action="$configDoc.getURL('save')" class="xform"&gt;
+      &lt;div class="hidden"&gt;
+        &lt;input type="hidden" name="form_token" value="$!escapetool.xml($services.csrf.token)"/&gt;
+      &lt;/div&gt;
+  #else
+    &lt;div class="xform"&gt;
+  #end
+  &lt;h3&gt;$escapetool.xml($services.localization.render('admin.idoauth.default.heading'))&lt;/h3&gt;
+  &lt;p class="noitems"&gt;$escapetool.xml($services.localization.render('admin.idoauth.default.description'))&lt;/p&gt;
+  #showProperty($configDoc $identityOAuthProviderClassName 'active')
+  #if ($xcontext.action == 'admin')
+    &lt;p&gt;
+      &lt;input type="submit" class="btn btn-primary" name="action_saveandcontinue"
+        value="$escapetool.xml($services.localization.render('save'))"/&gt;
+    &lt;/p&gt;
+  &lt;/form&gt;
+  #else
+  &lt;/div&gt;
+  #end
+  {{/html}}
+#end
+{{/velocity}}</content>
+</xwikidoc>
