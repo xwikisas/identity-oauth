@@ -39,7 +39,8 @@
     </xwiki.extension.licensing.publicDocuments>
     <xwiki.extension.licensing.excludedDocuments>
       IdentityOAuth.Config,
-      IdentityOAuth.WebPreferences
+      IdentityOAuth.WebPreferences,
+      IdentityOAuth.IdentityOAuthGeneralConfiguration
     </xwiki.extension.licensing.excludedDocuments>
     <!-- Name to display by the Extension Manager -->
     <xwiki.extension.name>Identity OAuth (Pro)</xwiki.extension.name>
