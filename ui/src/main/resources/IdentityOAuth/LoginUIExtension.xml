@@ -141,7 +141,7 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>.providerLoginButton {
+      <code>.provider-login-button {
   background: white;
   color: @text-color;
   border: @xwiki-border-color 2px solid;
@@ -151,6 +151,14 @@
     height: 1.1em;
     margin-right: 2%;
   }
+}
+
+.identity-oauth-provider-login {
+  padding: 3% 0;
+}
+
+#idoauth-login-choice {
+  margin-bottom: 5%;
 }</code>
     </property>
     <property>

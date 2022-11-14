@@ -1,11 +1,10 @@
 {{velocity output="false"}}
 #macro (renderLoginCodes $loginCodes $hasSeveralLogins)
   #set ($count = 0)
+  #set ($loginCodeWrapperStart = '<div class="identity-oauth-provider-login">')
   #foreach ($loginCode in $identityOAuth.renderLoginCodes())
-    ## Add intermediate spacing
-    #if ($count > 0)#set($loginCodes = "${loginCodes}<div class='col-xs-12'>&nbsp;</div>")#end
     #set ($count = $mathtool.add($count, 1))
-    #set ($loginCodes="${loginCodes}${loginCode}")
+    #set ($loginCodes="${loginCodes}${loginCodeWrapperStart}${loginCode}</div>")
   #end
   #set ($hasSeveralLogins = $count > 0)
 #end
@@ -62,7 +61,7 @@
       #set($statusMsg = "Login page")
       ## assemble the login code from the providers
       #set($loginCodes = '<div id="idoauth-login-choice">
-                             <div class="col-xs-12" style="margin-bottom: 20px; padding: 20px;">')
+                             <div class="col-xs-12">')
       #renderLoginCodes($loginCodes $hasSeveralLogins)
       #set($loginCodes="${loginCodes}</div><div style='clear: both;'></div></div>")
     #end

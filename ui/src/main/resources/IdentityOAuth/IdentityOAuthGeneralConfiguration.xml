@@ -149,7 +149,7 @@
     <property>
       <loginTemplate>{{velocity}}
 {{html clean=false}}
-&lt;a href='#' onclick='return loginWithXWiki();' class='btn providerLoginButton'&gt;
+&lt;a href='#' onclick='return loginWithXWiki();' class='btn provider-login-button'&gt;
   &lt;img src="$xwiki.getSkinFile('icons/xwiki/favicon.ico')"&gt;
   $escapetool.xml($services.localization.render('idoauth.login.withxwiki'))
 &lt;/a&gt;
