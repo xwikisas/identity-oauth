@@ -1,10 +1,9 @@
 {{velocity output="false"}}
 #macro (renderLoginCodes $loginCodes $hasSeveralLogins)
   #set ($count = 0)
-  #set ($loginCodeWrapperStart = '<div class="identity-oauth-provider-login">')
   #foreach ($loginCode in $identityOAuth.renderLoginCodes())
     #set ($count = $mathtool.add($count, 1))
-    #set ($loginCodes="${loginCodes}${loginCodeWrapperStart}${loginCode}</div>")
+    #set ($loginCodes="${loginCodes}${loginCode}")
   #end
   #set ($hasSeveralLogins = $count > 0)
 #end

@@ -150,7 +150,7 @@
       <loginTemplate>{{velocity}}
 {{html clean=false}}
 &lt;a href='#' onclick='return loginWithXWiki();' class='btn'
-  style='display: flex; background: white;
+  style='display: flex; background: white; align-items: center;
   color: #333; border: #e8e8e8 2px solid;'&gt;
 &lt;img src="$xwiki.getSkinFile('icons/xwiki/favicon.svg')"
   style='height: 1.1em; margin-right: 2%;'&gt;
