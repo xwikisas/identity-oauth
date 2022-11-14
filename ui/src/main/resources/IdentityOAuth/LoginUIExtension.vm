@@ -11,7 +11,6 @@
 {{/velocity}}
 
 {{velocity}}
-#set ($discard = $xwiki.ssx.use('IdentityOAuth.LoginUIExtension'))
 #set ($mainReference = $services.model.createDocumentReference('', 'IdentityOAuth', 'WebPreferences'))
 #set ($generalConfigDoc = $xwiki.getDocument('IdentityOAuth.IdentityOAuthGeneralConfiguration'))
 #set ($generalConfigObj = $generalConfigDoc.getObject('IdentityOAuth.IdentityOAuthGeneralConfigClass'))
@@ -60,8 +59,8 @@
     #else
       #set($statusMsg = "Login page")
       ## assemble the login code from the providers
-      #set($loginCodes = '<div id="idoauth-login-choice">
-                             <div class="col-xs-12">')
+      #set($loginCodes = '<div id="idoauth-login-choice" style="margin: 5% 0 10% 0">
+                             <div style="display: grid; grid-row-gap: 20%;">')
       #renderLoginCodes($loginCodes $hasSeveralLogins)
       #set($loginCodes="${loginCodes}</div><div style='clear: both;'></div></div>")
     #end
