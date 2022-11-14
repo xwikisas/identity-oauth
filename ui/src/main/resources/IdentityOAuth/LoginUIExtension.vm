@@ -1,5 +1,20 @@
+{{velocity output="false"}}
+#macro (renderLoginCodes $loginCodes $hasSeveralLogins)
+  #set ($count = 0)
+  #set ($loginCodeWrapperStart = '<div class="identity-oauth-provider-login">')
+  #foreach ($loginCode in $identityOAuth.renderLoginCodes())
+    #set ($count = $mathtool.add($count, 1))
+    #set ($loginCodes="${loginCodes}${loginCodeWrapperStart}${loginCode}</div>")
+  #end
+  #set ($hasSeveralLogins = $count > 0)
+#end
+{{/velocity}}
+
 {{velocity}}
+#set ($discard = $xwiki.ssx.use('IdentityOAuth.LoginUIExtension'))
 #set ($mainReference = $services.model.createDocumentReference('', 'IdentityOAuth', 'WebPreferences'))
+#set ($generalConfigDoc = $xwiki.getDocument('IdentityOAuth.IdentityOAuthGeneralConfiguration'))
+#set ($generalConfigObj = $generalConfigDoc.getObject('IdentityOAuth.IdentityOAuthGeneralConfigClass'))
 #if ($xcontext.getAction()=="login" && $doc.fullName=="XWiki.XWikiLogin")
   #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
     #set($statusMessage = "identityOAuth installed but not licensed.")
@@ -25,17 +40,20 @@
         #end
       #end
     #elseif ($request.identityOAuth == "start")
-      #set($statusMsg = "IdentityOAuth Start login, should bounce to the provider.")
-      #set($succesMsg = $services.localization.render("idoauth.login.oauth.message"))
-      #set($success = $identityOAuth.processOAuthStart()) <!-- processOAuthStart: $success -->
-      #if($success)
-        #if($request.state)
-          #set($successMsg = $services.localization.render("idoauth.login.oauth.successwithredirect"))
+      ## Don't alter the login form in case the XWiki default implementation is requested.
+      #if ("$!request.provider" != "default")
+        #set($statusMsg = "IdentityOAuth Start login, should bounce to the provider.")
+        #set($succesMsg = $services.localization.render("idoauth.login.oauth.message"))
+        #set($success = $identityOAuth.processOAuthStart()) <!-- processOAuthStart: $success -->
+        #if($success)
+          #if($request.state)
+            #set($successMsg = $services.localization.render("idoauth.login.oauth.successwithredirect"))
+          #else
+            #set($successMsg = $services.localization.render("idoauth.login.oauth.success"))
+          #end
         #else
-          #set($successMsg = $services.localization.render("idoauth.login.oauth.success"))
+          #set($errorMsg = $services.localization.render("idoauth.login.oauth.failedOAuth"))
         #end
-      #else
-        #set($errorMsg = $services.localization.render("idoauth.login.oauth.failedOAuth"))
       #end
     #elseif ($request.identityOAuth)
       #set($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
@@ -43,27 +61,9 @@
       #set($statusMsg = "Login page")
       ## assemble the login code from the providers
       #set($loginCodes = '<div id="idoauth-login-choice">
-                             <div class="col-xs-12" style="margin-bottom: 20px; padding: 20px;">')
-
-      #set($count = 0)
-      #foreach($loginCode in $identityOAuth.renderLoginCodes())
-        ## intermediate spacing
-        #if($count > 0)#set($loginCodes = "${loginCodes}<div class='col-xs-12'>&nbsp;</div>")#end
-        #set($count = $mathtool.add($count, 1))
-        #if("XWikiLogin" == $loginCode)
-          #set($xwikiLogoUrl = $xwiki.getDocument("IdentityOAuth.WebHome").getAttachmentURL("xwiki-logo.png"))
-          #set($loginCodes= "${loginCodes}<a href='javascript:void(0)' ##
-                           onclick='return loginWithXWiki()' class='btn btn-primary col-xs-12' ##
-                           style='text-align:left; background: white; color: #808080; ##
-                                   font-weight:bold; border: #808080 2px solid;'>##
-              <img src='../../../resources/icons/xwiki/favicon.svg'
-                   style='height:1.2em; margin-bottom:0.1em'>&nbsp;&nbsp;${services.localization.render('idoauth.login.withxwiki')}</a>")
-        #else
-          #set($loginCodes="${loginCodes}${loginCode}")
-        #end
-      #end
+                             <div class="col-xs-12">')
+      #renderLoginCodes($loginCodes $hasSeveralLogins)
       #set($loginCodes="${loginCodes}</div><div style='clear: both;'></div></div>")
-      #if($count > 1)#set($hasSeveralLogins=true)#else#set($hasSeveralLogins=false)#end
     #end
 
     ## ============================================== end of velocity preparation ===============================
