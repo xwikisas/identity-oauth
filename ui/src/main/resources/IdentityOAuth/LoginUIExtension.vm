@@ -1,9 +1,10 @@
 {{velocity output="false"}}
 #macro (renderLoginCodes $loginCodes $hasSeveralLogins)
   #set ($count = 0)
+  #set ($loginCodeWrapperStart = '<div class="identity-oauth-provider-login">')
   #foreach ($loginCode in $identityOAuth.renderLoginCodes())
     #set ($count = $mathtool.add($count, 1))
-    #set ($loginCodes="${loginCodes}${loginCode}")
+    #set ($loginCodes="${loginCodes}${loginCodeWrapperStart}${loginCode}</div>")
   #end
   #set ($hasSeveralLogins = $count > 0)
 #end
@@ -58,8 +59,8 @@
     #else
       #set($statusMsg = "Login page")
       ## assemble the login code from the providers
-      #set($loginCodes = '<div id="idoauth-login-choice" style="margin: 5% 0 10% 0">
-                             <div style="display: grid; grid-row-gap: 20%;">')
+      #set($loginCodes = '<div id="idoauth-login-choice">
+                             <div class="col-xs-12">')
       #renderLoginCodes($loginCodes $hasSeveralLogins)
       #set($loginCodes="${loginCodes}</div><div style='clear: both;'></div></div>")
     #end
@@ -67,6 +68,28 @@
     ## ============================================== end of velocity preparation ===============================
 
     {{html clean="false" wiki="false"}}<!-- this is IdentityOAuth -->
+    <!-- This code is displayed on the login page, so we cannot use a ssx skin extension since guest users may have
+    restricted view rights and the style won't be displayed -->
+    <style>
+    .provider-login-button {
+      background: white;
+      color: #333;
+      border: #e8e8e8 2px solid;
+      display: flex;
+      align-items: center;
+    }
+    .provider-login-button >img {
+      height: 1.1em;
+      margin-right: 2%;
+    }
+    .identity-oauth-provider-login {
+      padding: 3% 0;
+    }
+
+    #idoauth-login-choice {
+      margin-bottom: 5%;
+    }
+    </style>
     <!-- ======= ${statusMsg} ====== -->
 
     #if ($successMsg || $errorMsg)
