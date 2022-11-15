@@ -11,7 +11,6 @@
 {{/velocity}}
 
 {{velocity}}
-#set ($discard = $xwiki.ssx.use('IdentityOAuth.LoginUIExtension'))
 #set ($mainReference = $services.model.createDocumentReference('', 'IdentityOAuth', 'WebPreferences'))
 #set ($generalConfigDoc = $xwiki.getDocument('IdentityOAuth.IdentityOAuthGeneralConfiguration'))
 #set ($generalConfigObj = $generalConfigDoc.getObject('IdentityOAuth.IdentityOAuthGeneralConfigClass'))
@@ -69,6 +68,28 @@
     ## ============================================== end of velocity preparation ===============================
 
     {{html clean="false" wiki="false"}}<!-- this is IdentityOAuth -->
+    <!-- This code is displayed on the login page, so we cannot use a ssx skin extension since guest users may have
+    restricted view rights and the style won't be displayed -->
+    <style>
+    .provider-login-button {
+      background: white;
+      color: #333;
+      border: #e8e8e8 2px solid;
+      display: flex;
+      align-items: center;
+    }
+    .provider-login-button >img {
+      height: 1.1em;
+      margin-right: 2%;
+    }
+    .identity-oauth-provider-login {
+      padding: 3% 0;
+    }
+
+    #idoauth-login-choice {
+      margin-bottom: 5%;
+    }
+    </style>
     <!-- ======= ${statusMsg} ====== -->
 
     #if ($successMsg || $errorMsg)
