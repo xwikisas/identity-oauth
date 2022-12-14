@@ -88,8 +88,15 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
     @Named("context")
     private ComponentManager componentManager;
 
-    // internal objects
+    /**
+     * EntitytReference of the Identity OAuth Provider Config Class.
+     */
     private EntityReference providerConfigRef;
+
+    /**
+     * Reference of the Identity OAuth Configuration class.
+     */
+    private EntityReference configRef;
 
     private Set<DocumentReference> configDocReferences = new HashSet<>();
 
@@ -103,14 +110,25 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
         return providerConfigRef;
     }
 
+    EntityReference getConfigRef()
+    {
+        if (configRef == null) {
+            DocumentReference docRef = new DocumentReference(WIKINAME,
+                SPACENAME, "IdentityOAuthConfigClass");
+            configRef = new ObjectReference("IdentityOAuth.IdentityOAuthConfigClass", docRef);
+        }
+        return configRef;
+    }
+
     boolean hasIOConfigObject(XWikiDocument doc)
     {
         if (configDocReferences.contains(doc.getDocumentReference())) {
             return true;
         }
-        BaseObject obj2 = doc.getXObject(getProviderConfigRef(), false, contextProvider.get());
-        log.debug("Obtained object " + obj2 + " for " + " " + getProviderConfigRef());
-        return obj2 != null;
+        BaseObject providerObj = doc.getXObject(getProviderConfigRef(), false, contextProvider.get());
+        BaseObject configObj = doc.getXObject(getConfigRef(), false, contextProvider.get());
+
+        return providerObj != null || configObj != null;
     }
 
     /**
