@@ -38,7 +38,7 @@ public interface IdentityOAuthConstants
     /**
      * IdentityOAuth.
      */
-    String SPACENAME = "IdentityOAuth";
+    String IDENTITY_SPACE = "IdentityOAuth";
     /**
      * view.
      */
