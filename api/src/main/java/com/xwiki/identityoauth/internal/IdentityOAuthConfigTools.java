@@ -63,6 +63,20 @@ import com.xwiki.identityoauth.IdentityOAuthProvider;
 @Singleton
 public class IdentityOAuthConfigTools implements IdentityOAuthConstants
 {
+    /**
+     * Reference of the Identity OAuth Provider Config Class. This class keeps provider specific properties (e.g.
+     * providerHint, loginTemplate, active status).
+     */
+    private final LocalDocumentReference providerConfigClassRef =
+        new LocalDocumentReference(IDENTITY_SPACE, "OAuthProviderClass");
+
+    /**
+     * Reference of the Identity OAuth Configuration class. This class keeps authorization specific properties (e.g.
+     * clientId, secret, scope).
+     */
+    private final LocalDocumentReference identityConfigClassRef =
+        new LocalDocumentReference(IDENTITY_SPACE, "IdentityOAuthConfigClass");
+
     // environment
     @Inject
     private Logger log;
@@ -87,33 +101,15 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
     @Named("context")
     private ComponentManager componentManager;
 
-    /**
-     * Reference of the Identity OAuth Provider Config Class. This class keeps provider specific properties (e.g.
-     * providerHint, loginTemplate, active status).
-     */
-    private LocalDocumentReference providerConfigClassRef;
-
-    /**
-     * Reference of the Identity OAuth Configuration class. This class keeps authorization specific properties (e.g.
-     * clientId, secret, scope).
-     */
-    private LocalDocumentReference identityConfigClassRef;
-
     private Set<DocumentReference> configDocReferences = new HashSet<>();
 
     LocalDocumentReference getProviderConfigClassRef()
     {
-        if (providerConfigClassRef == null) {
-            providerConfigClassRef = new LocalDocumentReference(IDENTITY_SPACE, "OAuthProviderClass");
-        }
         return providerConfigClassRef;
     }
 
     LocalDocumentReference getIdentityConfigClassRef()
     {
-        if (identityConfigClassRef == null) {
-            identityConfigClassRef = new LocalDocumentReference(IDENTITY_SPACE, "IdentityOAuthConfigClass");
-        }
         return identityConfigClassRef;
     }
 
