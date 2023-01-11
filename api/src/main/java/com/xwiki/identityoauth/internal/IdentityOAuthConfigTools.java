@@ -40,8 +40,7 @@ import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.AttachmentReferenceResolver;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.ObjectReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryManager;
 
@@ -64,6 +63,20 @@ import com.xwiki.identityoauth.IdentityOAuthProvider;
 @Singleton
 public class IdentityOAuthConfigTools implements IdentityOAuthConstants
 {
+    /**
+     * Reference of the Identity OAuth Provider Config Class. This class keeps provider specific properties (e.g.
+     * providerHint, loginTemplate, active status).
+     */
+    private final LocalDocumentReference providerConfigClassRef =
+        new LocalDocumentReference(IDENTITY_SPACE, "OAuthProviderClass");
+
+    /**
+     * Reference of the Identity OAuth Configuration class. This class keeps authorization specific properties (e.g.
+     * clientId, secret, scope).
+     */
+    private final LocalDocumentReference identityConfigClassRef =
+        new LocalDocumentReference(IDENTITY_SPACE, "IdentityOAuthConfigClass");
+
     // environment
     @Inject
     private Logger log;
@@ -88,19 +101,16 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
     @Named("context")
     private ComponentManager componentManager;
 
-    // internal objects
-    private EntityReference providerConfigRef;
-
     private Set<DocumentReference> configDocReferences = new HashSet<>();
 
-    EntityReference getProviderConfigRef()
+    LocalDocumentReference getProviderConfigClassRef()
     {
-        if (providerConfigRef == null) {
-            DocumentReference docRef = new DocumentReference(WIKINAME,
-                    SPACENAME, "OAuthProviderClass");
-            providerConfigRef = new ObjectReference("IdentityOAuth.OAuthProviderClass", docRef);
-        }
-        return providerConfigRef;
+        return providerConfigClassRef;
+    }
+
+    LocalDocumentReference getIdentityConfigClassRef()
+    {
+        return identityConfigClassRef;
     }
 
     boolean hasIOConfigObject(XWikiDocument doc)
@@ -108,9 +118,13 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
         if (configDocReferences.contains(doc.getDocumentReference())) {
             return true;
         }
-        BaseObject obj2 = doc.getXObject(getProviderConfigRef(), false, contextProvider.get());
-        log.debug("Obtained object " + obj2 + " for " + " " + getProviderConfigRef());
-        return obj2 != null;
+        BaseObject providerConfigObj = doc.getXObject(getProviderConfigClassRef(), false, contextProvider.get());
+        BaseObject identityConfigObj = doc.getXObject(getIdentityConfigClassRef(), false, contextProvider.get());
+
+        // Each configuration object, of the provider particularities or of the authorization specific properties,
+        // can be kept on separate pages, depending on how the provider is implemented. Given this, the
+        // administration section might perform a save on only one of these 2 objects.
+        return providerConfigObj != null || identityConfigObj != null;
     }
 
     /**
@@ -130,7 +144,7 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
             log.info("Found providers: " + results);
             for (Object r : results) {
                 XWikiDocument doc = contextProvider.get().getWiki().getDocument((String) r, contextProvider.get());
-                BaseObject o = doc.getXObject(getProviderConfigRef(), false, contextProvider.get());
+                BaseObject o = doc.getXObject(getProviderConfigClassRef(), false, contextProvider.get());
                 log.info("Provider " + o.getStringValue(PROVIDER_HINT));
                 if (o.getIntValue(ACTIVE) != 0) {
                     log.info("... active");
