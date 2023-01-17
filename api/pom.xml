@@ -22,7 +22,7 @@
   <parent>
     <groupId>com.xwiki.identity-oauth</groupId>
     <artifactId>identity-oauth-parent</artifactId>
-    <version>1.5.3-SNAPSHOT</version>
+    <version>1.5.3</version>
   </parent>
 
   <artifactId>identity-oauth-api</artifactId>
