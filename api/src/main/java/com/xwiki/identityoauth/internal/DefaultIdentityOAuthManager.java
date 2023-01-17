@@ -360,7 +360,10 @@ public class DefaultIdentityOAuthManager
      */
     public boolean doesDetectReturn()
     {
-        return sessionInfoProvider.get().getProviderAuthorizationRunning() != null;
+        // Verify if the request contains an authorization code, to be sure it is an OAuth return. Check also for a
+        // running provider, which means the OAuth start was already processed.
+        return sessionInfoProvider.get().getProviderAuthorizationRunning() != null
+            && xwikiContextProvider.get().getRequest().getParameter("code") != null;
     }
 
     /**
