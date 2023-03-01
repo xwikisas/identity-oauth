@@ -33,7 +33,7 @@
   <comment/>
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
-  <hidden>false</hidden>
+  <hidden>true</hidden>
   <content>This is the class to represent an IdentityOAuth provider, how it is built and how it is login-rendered.&#xd;
 &#xd;
 &#xd;
