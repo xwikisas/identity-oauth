@@ -1,9 +1,7 @@
 # OAuth Identity XWiki App (Pro)
 
-* Project Lead: [Paul Libbrecht](https://github.com/polx)
-* Communication: [Web Forum](http://dev.xwiki.org/xwiki/bin/view/Community/Discuss), 
-    [chat]( https://dev.xwiki.org/xwiki/bin/view/Community/Chat),
-    [security concerns](http://dev.xwiki.org/xwiki/bin/view/Community/Discuss#HMailingLists)
+* Project Lead: N/A
+* Communication: [Mailing List](http://dev.xwiki.org/xwiki/bin/view/Community/MailingLists>), [Chat](https://dev.xwiki.org/xwiki/bin/view/Community/Chat)
 * [Development Practices](http://dev.xwiki.org)
 * Minimal XWiki version supported: XWiki 11.10
 * License: LGPL 2.1+
