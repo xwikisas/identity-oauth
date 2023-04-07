@@ -46,17 +46,26 @@
       #set($nuts=$tn.add("${p}${name}"))
     #end
   #end
-  #macro (t $name)
+  #macro (t $name $usage)
     #alignWithTranslationPrefixes($name)
-    $services.localization.render($tn)
+    #if ($usage == 'js')
+      $escapetool.javascript($services.localization.render($tn))
+    #else
+      $escapetool.xml($services.localization.render($tn))
+    #end
   #end
 
   ## tp: shorthand for translation with parameters
-  #macro (tp $name $params)##
+  #macro (tp $name $params $usage)##
     #alignWithTranslationPrefixes($name)
     #set ($msg = $services.localization.render($tn,$params))##
     ## convert to <a href="link">link-text</a> for the simple wiki syntax of links
-    $stringtool.replacePattern($msg, '\[\[([^>]*)>>([^\]]*)\]\]', '<a href="$2">$1</a>')##
+    #set ($msg = $stringtool.replacePattern($msg, '\[\[([^>]*)>>([^\]]*)\]\]', '<a href="$2">$1</a>'))##
+    #if ($usage == 'js')
+      $escapetool.javascript($msg)
+    #else
+      $escapetool.xml($msg)
+    #end
   #end
 
   ## displayInput: displays the form element of the relevant property of the object having removed the
@@ -93,7 +102,7 @@
       // absUrl: $absUrl
         #set($serverReturn = "${absUrl.substring(0, $absUrl.indexOf('/',8))}${serverReturn}")
       #end
-      window.placeHolderForRedirectUrl = '#tp("redirectUrl.placeHolderMessage", ["${serverReturn}"])';
+      window.placeHolderForRedirectUrl = '#tp("redirectUrl.placeHolderMessage", ["${serverReturn}"], "js")';
       var p = window.location.href.indexOf('/admin');
       window.browserReturnUrl = (p === -1 ?
               window.location.href :
