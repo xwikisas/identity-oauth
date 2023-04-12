@@ -55,7 +55,7 @@
         #end
       #end
     #elseif ($request.identityOAuth)
-      #set ($statusMsg = "no such identityOAuth operation '${escapetool.xml($request.identityOAuth)}'")
+      #set ($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
     #else
       #set($statusMsg = "Login page")
       ## assemble the login code from the providers
@@ -90,7 +90,7 @@
       margin-bottom: 5%;
     }
     </style>
-    <!-- ======= ${statusMsg} ====== -->
+    <!-- ======= ${escapetool.xml($statusMsg)} ====== -->
 
     #if ($successMsg || $errorMsg)
     <script type="text/javascript">

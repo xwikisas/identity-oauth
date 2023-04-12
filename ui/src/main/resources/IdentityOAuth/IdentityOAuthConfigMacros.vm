@@ -21,50 +21,52 @@
   #macro (initConfigObjects $configDocName $extraObjectClassPropPrefixes $translationPrefixesP)
     #set($formId = "${section.toLowerCase()}_${configDocName1}")
     #set($configDoc = $xwiki.getDocument($configDocName))
-
     #set($classNameIO="IdentityOAuth.IdentityOAuthConfigClass")
     #set($propNamePrefixIO="${configDoc.fullName}_${classNameIO}_0")
     #set($objIO = $configDoc.getObject($classNameIO))
-
+    ## Handle translation prefixes.
     #set($translationPrefixes = [])
     #foreach($p in $translationPrefixesP)
       #set($nuts=$translationPrefixes.add($p))
     #end
     #set($nuts=$translationPrefixes.add('IdentityOAuth.IdentityOAuthConfigClass_'))
-
+    ## Handle extra class properties.
     #foreach($x in $extraObjectClassPropPrefixes)
       #set($shhh = $x.add($x[0]))
       #set($x[0] = $configDoc.getObject($x[0]))
     #end
   #end
 
-
-  ## t: shorthand for translation
+  ##
+  ## Macros used in managing providers translations. t is for translation and tp for translation with parameters.
+  ##
   #macro (alignWithTranslationPrefixes $name)
     #set($tn = [])
     #foreach($p in $translationPrefixes)
       #set($nuts=$tn.add("${p}${name}"))
     #end
   #end
-  #macro (t $name $usage)
+  #macro (getTranslation $name $usage $translation)
     #alignWithTranslationPrefixes($name)
     #if ($usage == 'js')
-      $escapetool.javascript($services.localization.render($tn))
+      #set ($translation = $escapetool.javascript($services.localization.render($tn)))
     #else
-      $escapetool.xml($services.localization.render($tn))
+      #set ($translation = $escapetool.xml($services.localization.render($tn)))
     #end
   #end
-
-  ## tp: shorthand for translation with parameters
-  #macro (tp $name $params $usage)##
+  ## Display translation.
+  #macro (t $name $usage)
+    #getTranslation($name $usage $translation)
+    $translation
+  #end
+  ## Get translation with parameters.
+  #macro (tp $name $params $usage $translation)
     #alignWithTranslationPrefixes($name)
-    #set ($msg = $services.localization.render($tn,$params))##
-    ## convert to <a href="link">link-text</a> for the simple wiki syntax of links
-    #set ($msg = $stringtool.replacePattern($msg, '\[\[([^>]*)>>([^\]]*)\]\]', '<a href="$2">$1</a>'))##
+    #set ($msg = $services.localization.render($tn, $params))##
     #if ($usage == 'js')
-      $escapetool.javascript($msg)
+      #set ($translation = $escapetool.javascript($msg))
     #else
-      $escapetool.xml($msg)
+      #set ($translation = $escapetool.xml($msg))
     #end
   #end
 
@@ -102,7 +104,8 @@
       // absUrl: $absUrl
         #set($serverReturn = "${absUrl.substring(0, $absUrl.indexOf('/',8))}${serverReturn}")
       #end
-      window.placeHolderForRedirectUrl = '#tp("redirectUrl.placeHolderMessage", ["${serverReturn}"], "js")';
+      #tp("redirectUrl.placeHolderMessage", ["${serverReturn}"], "js", $translation)
+      window.placeHolderForRedirectUrl = "${translation}";
       var p = window.location.href.indexOf('/admin');
       window.browserReturnUrl = (p === -1 ?
               window.location.href :
