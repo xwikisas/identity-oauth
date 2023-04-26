@@ -46,13 +46,13 @@
 #if (!$services.licensing.licensor.hasLicensureForEntity($mainReference))
   {{error}}#getMissingLicenseMessage('idoauth.extension.name'){{/error}}
 #else
-	$services.localization.render('idoauth.webHome.1')
-	$services.localization.render('idoauth.webHome.2')
-	$services.localization.render('idoauth.webHome.3')
-  $services.localization.render('idoauth.webHome.4')
+  $escapetool.xml($services.localization.render('idoauth.webHome.1'))
+  $escapetool.xml($services.localization.render('idoauth.webHome.2'))
+  $escapetool.xml($services.localization.render('idoauth.webHome.3'))
+  $escapetool.xml($services.localization.render('idoauth.webHome.4'))
 #end
 
-[[=&gt; More about the IdentityOAuth Application>>https://store.xwiki.com/xwiki/bin/view/Extension/IdentityOAuth]].
+[[=&gt; More about the IdentityOAuth Application&gt;&gt;https://store.xwiki.com/xwiki/bin/view/Extension/IdentityOAuth]].
 {{/velocity}}
 </content>
   <attachment>

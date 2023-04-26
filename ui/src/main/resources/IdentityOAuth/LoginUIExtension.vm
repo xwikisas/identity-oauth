@@ -29,7 +29,7 @@
         #set($errorMsg = " ${errorMsg} ${services.localization.render('idoauth.login.domainerror2')} $!{email}.")
         #set($errorMsg = " ${errorMsg} ${services.localization.render('idoauth.login.domainerror3')}")
       #elseif ($result=="ok")
-        #set($successM = ${services.localization.render("idoauth.login.redirectmessage")})
+        #set ($successMsg = ${services.localization.render("idoauth.login.redirectmessage")})
         ## the browser should have been redirected by processOAuthReturn
       #else ## $result is "no user"
         #set($errorMsg = ${services.localization.render('idoauth.login.message')})
@@ -55,7 +55,7 @@
         #end
       #end
     #elseif ($request.identityOAuth)
-      #set($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
+      #set ($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
     #else
       #set($statusMsg = "Login page")
       ## assemble the login code from the providers
@@ -90,7 +90,7 @@
       margin-bottom: 5%;
     }
     </style>
-    <!-- ======= ${statusMsg} ====== -->
+    <!-- ======= ${escapetool.xml($statusMsg)} ====== -->
 
     #if ($successMsg || $errorMsg)
     <script type="text/javascript">
