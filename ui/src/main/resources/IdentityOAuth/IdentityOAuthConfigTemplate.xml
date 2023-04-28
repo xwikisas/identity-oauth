@@ -132,19 +132,10 @@
       </useCookies>
     </class>
     <property>
-      <activate/>
-    </property>
-    <property>
       <active/>
     </property>
     <property>
-      <appname/>
-    </property>
-    <property>
       <clientid>xxx</clientid>
-    </property>
-    <property>
-      <domain/>
     </property>
     <property>
       <redirectUrl/>
