@@ -22,7 +22,7 @@
   <parent>
     <groupId>com.xwiki.parent</groupId>
     <artifactId>xwikisas-parent-platform</artifactId>
-    <version>11.10</version>
+    <version>13.10-3</version>
   </parent>
 
   <groupId>com.xwiki.identity-oauth</groupId>
@@ -35,7 +35,7 @@
 
   <properties>
     <licensing.version>1.22.1</licensing.version>
-    <xwiki.minversion>11.10</xwiki.minversion>
+    <xwiki.minversion>13.10</xwiki.minversion>
   </properties>
 
   <issueManagement>
@@ -53,5 +53,23 @@
     <module>api</module>
     <module>ui</module>
   </modules>
-
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <licenseSets>
+            <licenseSet>
+              <excludes>
+                <exclude>**/IdentityOAuthConfigClass\.js</exclude>
+                <exclude>**/LoginUIExtension\.vm</exclude>
+                <exclude>**/IdentityOAuthConfigMacros\.vm</exclude>
+              </excludes>
+            </licenseSet>
+          </licenseSets>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

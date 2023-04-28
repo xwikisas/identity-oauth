@@ -1,4 +1,5 @@
-<?xml version='1.1' encoding='UTF-8'?>
+<?xml version="1.1" encoding="UTF-8"?>
+
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc>
+<xwikidoc version="1.4" reference="IdentityOAuth.LoginUIExtension" locale="">
   <web>IdentityOAuth</web>
   <name>LoginUIExtension</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
-  <parent>IdentityOAuth.WebHome</parent>
   <creator>xwiki:XWiki.Admin</creator>
+  <parent>IdentityOAuth.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <version>1.1</version>
@@ -50,21 +51,61 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
+      <async_cached>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_cached</name>
+        <number>3</number>
+        <prettyName>Cached</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_cached>
+      <async_context>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>1</multiSelect>
+        <name>async_context</name>
+        <number>4</number>
+        <prettyName>Context elements</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator>, </separator>
+        <separators>|, </separators>
+        <size>5</size>
+        <unmodifiable>0</unmodifiable>
+        <values>action=Action|doc.reference=Document|icon.theme=Icon theme|locale=Language|rendering.defaultsyntax=Default syntax|rendering.restricted=Restricted|rendering.targetsyntax=Target syntax|request.base=Request base URL|request.parameters=Request parameters|request.url=Request URL|request.wiki=Request wiki|user=User|wiki=Wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </async_context>
+      <async_enabled>
+        <defaultValue>0</defaultValue>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType/>
+        <name>async_enabled</name>
+        <number>2</number>
+        <prettyName>Asynchronous rendering</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </async_enabled>
       <content>
         <disabled>0</disabled>
         <editor>Text</editor>
         <name>content</name>
-        <number>3</number>
-        <prettyName>Extension Content</prettyName>
-        <rows>10</rows>
-        <size>40</size>
+        <number>1</number>
+        <prettyName>Executed Content</prettyName>
+        <rows>25</rows>
+        <size>120</size>
         <unmodifiable>0</unmodifiable>
         <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
       </content>
       <extensionPointId>
         <disabled>0</disabled>
         <name>extensionPointId</name>
-        <number>1</number>
+        <number>5</number>
         <prettyName>Extension Point ID</prettyName>
         <size>30</size>
         <unmodifiable>0</unmodifiable>
@@ -73,7 +114,7 @@
       <name>
         <disabled>0</disabled>
         <name>name</name>
-        <number>2</number>
+        <number>6</number>
         <prettyName>Extension ID</prettyName>
         <size>30</size>
         <unmodifiable>0</unmodifiable>
@@ -84,7 +125,7 @@
         <disabled>0</disabled>
         <editor>PureText</editor>
         <name>parameters</name>
-        <number>4</number>
+        <number>7</number>
         <prettyName>Extension Parameters</prettyName>
         <rows>10</rows>
         <size>40</size>
@@ -95,9 +136,11 @@
         <cache>0</cache>
         <disabled>0</disabled>
         <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
         <multiSelect>0</multiSelect>
         <name>scope</name>
-        <number>5</number>
+        <number>8</number>
         <prettyName>Extension Scope</prettyName>
         <relationalStorage>0</relationalStorage>
         <separator> </separator>
@@ -109,7 +152,16 @@
       </scope>
     </class>
     <property>
-      <content></content>
+      <async_cached/>
+    </property>
+    <property>
+      <async_context/>
+    </property>
+    <property>
+      <async_enabled/>
+    </property>
+    <property>
+      <content/>
     </property>
     <property>
       <extensionPointId>org.xwiki.platform.topmenu.left</extensionPointId>
@@ -118,10 +170,10 @@
       <name>com.xwiki.identity-oauth.loginUIX</name>
     </property>
     <property>
-      <parameters></parameters>
+      <parameters/>
     </property>
     <property>
-      <scope></scope>
+      <scope/>
     </property>
   </object>
 </xwikidoc>

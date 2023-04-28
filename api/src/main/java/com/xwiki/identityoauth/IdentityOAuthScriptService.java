@@ -88,8 +88,8 @@ public class IdentityOAuthScriptService implements ScriptService
     /**
      * Used by the admin UI to access the internal methods.
      *
-     * @param name the provider name as returned by {@link IdentityOAuthProvider#getProviderHint()} and contained in the
-     *             OAuthProviderClass object.
+     * @param name the provider name as returned by {@link IdentityOAuthProvider#getProviderHint()} and contained in
+     *     the OAuthProviderClass object.
      * @return the provider of the given name except if the action is not admin.
      */
     public IdentityOAuthProvider getProvider(String name)
@@ -123,7 +123,8 @@ public class IdentityOAuthScriptService implements ScriptService
     /**
      * Removes all information about the services of IdentityOAuth within the session of this user.
      */
-    public void clearAllSessionInfos() {
+    public void clearAllSessionInfos()
+    {
         manager.clearAllSessionInfos();
     }
 }
