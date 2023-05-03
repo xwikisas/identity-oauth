@@ -77,6 +77,9 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
     private final LocalDocumentReference identityConfigClassRef =
         new LocalDocumentReference(IDENTITY_SPACE, "IdentityOAuthConfigClass");
 
+    private final LocalDocumentReference configurableClassRef =
+        new LocalDocumentReference("XWiki", "ConfigurableClass");
+
     // environment
     @Inject
     private Logger log;
@@ -177,6 +180,13 @@ public class IdentityOAuthConfigTools implements IdentityOAuthConstants
             XWikiDocument doc = context.getWiki().getDocument(configurationPage, context);
             for (List<BaseObject> l : doc.getXObjects().values()) {
                 for (BaseObject obj : l) {
+                    // We skip the XWiki configurable class, which does not contain provider configurations, but is
+                    // usually present on the provider configuration page.
+                    if (obj.getXClass(context).getDocumentReference().getLocalDocumentReference()
+                        .equals(configurableClassRef))
+                    {
+                        continue;
+                    }
                     for (String name : obj.getPropertyNames()) {
                         String value = obj.getStringValue(name);
                         if ("redirectUrl".equals(name)) {
