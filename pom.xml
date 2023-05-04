@@ -53,23 +53,4 @@
     <module>api</module>
     <module>ui</module>
   </modules>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>com.mycila</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <configuration>
-          <licenseSets>
-            <licenseSet>
-              <excludes>
-                <exclude>**/IdentityOAuthConfigClass\.js</exclude>
-                <exclude>**/LoginUIExtension\.vm</exclude>
-                <exclude>**/IdentityOAuthConfigMacros\.vm</exclude>
-              </excludes>
-            </licenseSet>
-          </licenseSets>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
