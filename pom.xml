@@ -27,7 +27,7 @@
 
   <groupId>com.xwiki.identity-oauth</groupId>
   <artifactId>identity-oauth-parent</artifactId>
-  <version>1.6</version>
+  <version>1.6.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Identity OAuth (pro) parent POM</name>
@@ -46,7 +46,7 @@
     <connection>scm:git:git://github.com/xwikisas/identity-oauth.git</connection>
     <developerConnection>scm:git:git@github.com:xwikisas/identity-oauth.git</developerConnection>
     <url>https://github.com/xwikisas/identity-oauth/tree/master</url>
-    <tag>identity-oauth-1.6</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <modules>
