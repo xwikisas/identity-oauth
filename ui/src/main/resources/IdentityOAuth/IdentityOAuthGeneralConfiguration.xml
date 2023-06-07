@@ -40,6 +40,53 @@
   <object>
     <name>IdentityOAuth.IdentityOAuthGeneralConfiguration</name>
     <number>0</number>
+    <className>IdentityOAuth.IdentityOAuthGeneralConfigClass</className>
+    <guid>9b92e4d4-63a1-41bd-821c-cf16a169fe72</guid>
+    <class>
+      <name>IdentityOAuth.IdentityOAuthGeneralConfigClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultProvider>
+        <cache>0</cache>
+        <classname/>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>allowed</freeText>
+        <hint/>
+        <idField/>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>defaultProvider</name>
+        <number>2</number>
+        <picker>1</picker>
+        <prettyName>Default Provider</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator> </separator>
+        <separators/>
+        <size>1</size>
+        <sort/>
+        <sql>select providerHint.value from XWikiDocument doc, BaseObject as obj, StringProperty as providerHint where doc.fullName = obj.name and obj.className = 'IdentityOAuth.OAuthProviderClass' and providerHint.id.id=obj.id and providerHint.name='providerHint'</sql>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <valueField/>
+        <classType>com.xpn.xwiki.objects.classes.DBListClass</classType>
+      </defaultProvider>
+    </class>
+    <property>
+      <defaultProvider/>
+    </property>
+  </object>
+  <object>
+    <name>IdentityOAuth.IdentityOAuthGeneralConfiguration</name>
+    <number>0</number>
     <className>IdentityOAuth.OAuthProviderClass</className>
     <guid>33335821-1e48-4e4a-a440-3cc39cf16c35</guid>
     <class>

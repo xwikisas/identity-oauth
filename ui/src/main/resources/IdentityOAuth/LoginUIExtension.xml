@@ -171,6 +171,16 @@
   #end
   #set ($hasSeveralLogins = $count &gt; 0)
 #end
+#macro (redirectToProvider $provider)
+  #set ($currentLocation = "$request.requestURL?$!request.queryString")
+  #set ($authQueryString = {
+    'identityOAuth': 'start',
+    'provider': $provider,
+    'browserLocation': $currentLocation
+  })
+  #set ($loginURL = $xwiki.getURL('XWiki.XWikiLogin', 'login', $escapetool.url($authQueryString)))
+  #set ($discard = $response.sendRedirect($loginURL))
+#end
 {{/velocity}}
 
 {{velocity}}
@@ -220,12 +230,17 @@
     #elseif ($request.identityOAuth)
       #set ($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
     #else
-      #set($statusMsg = "Login page")
-      ## assemble the login code from the providers
-      #set($loginCodes = '&lt;div id="idoauth-login-choice"&gt;
-                             &lt;div class="col-xs-12"&gt;')
-      #renderLoginCodes($loginCodes $hasSeveralLogins)
-      #set($loginCodes="${loginCodes}&lt;/div&gt;&lt;div style='clear: both;'&gt;&lt;/div&gt;&lt;/div&gt;")
+      #set ($defaultProvider = $generalConfigObj.getValue('defaultProvider'))
+      #if ("$!defaultProvider" != "")
+        #redirectToProvider($defaultProvider)
+      #else
+        #set($statusMsg = "Login page")
+        ## assemble the login code from the providers
+        #set($loginCodes = '&lt;div id="idoauth-login-choice"&gt;
+                               &lt;div class="col-xs-12"&gt;')
+        #renderLoginCodes($loginCodes $hasSeveralLogins)
+        #set($loginCodes="${loginCodes}&lt;/div&gt;&lt;div style='clear: both;'&gt;&lt;/div&gt;&lt;/div&gt;")
+      #end
     #end
 
     ## ============================================== end of velocity preparation ===============================
