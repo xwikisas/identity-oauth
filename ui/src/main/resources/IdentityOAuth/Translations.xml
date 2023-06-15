@@ -39,8 +39,10 @@
   <content>
 
 admin.idoauth=Identity OAuth
-admin.idoauth.default.heading=Default Identity OAuth Provider
-admin.idoauth.default.description=Configure the default XWiki login implementation
+admin.idoauth.default.heading=XWiki Provider
+admin.idoauth.default.description=Configurations for the basic XWiki login.
+admin.idoauth.general.heading=Identity OAuth Providers
+admin.idoauth.general.description=General configurations for the Identity OAuth providers, considering the XWiki login option as the default implementation.
 
 idoauth.config.heading=Identity OAuth Integration Configuration
 IdentityOAuth.IdentityOAuthConfigClass_config.explanation=XWiki can be integrated with an external provider.
@@ -91,7 +93,8 @@ IdentityOAuth.IdentityOAuthConfigClass_warningIncomplete=Please provide all info
 IdentityOAuth.IdentityOAuthConfigClass_nowWhat1=Using a different browser, please try to login to the XWiki.
 IdentityOAuth.IdentityOAuthConfigClass_nowWhat2=Should you need support, please ask support@xwiki.com
 
-IdentityOAuth.IdentityOAuthGeneralConfigClass_displayXWikiLogin.hint=Whether to display the XWiki option on the login page
+IdentityOAuth.IdentityOAuthGeneralConfigClass_defaultProvider=Default provider
+IdentityOAuth.IdentityOAuthGeneralConfigClass_defaultProvider.hint=Jump to the login of a specific provider, without having to select it from a list of login options.
 
 IdentityOAuth.OAuthProviderClass_active.hint=Whether this provider should be displayed on the login page
 

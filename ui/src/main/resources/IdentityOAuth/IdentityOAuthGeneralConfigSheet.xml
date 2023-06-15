@@ -41,8 +41,8 @@
   $stringtool.removeEnd($stringtool.removeStart($displayOutput, '{{html clean="false" wiki="false"}}'), '{{/html}}')
 #end
 #macro (showProperty $configDoc $configClassName $propertyName)
-  #set ($discard = $configDoc.use($identityOAuthProviderClassName))
-  #set ($configClass = $xwiki.getDocument($identityOAuthProviderClassName))
+  #set ($discard = $configDoc.use($configClassName))
+  #set ($configClass = $xwiki.getDocument($configClassName))
   #set ($xclass = $configClass.getxWikiClass())
   &lt;dl&gt;
     &lt;dt&gt;
@@ -68,6 +68,7 @@
   Admin rights are needed.
 #else
   #set ($identityOAuthProviderClassName = 'IdentityOAuth.OAuthProviderClass')
+  #set ($identityOAuthGeneralConfigClassName = 'IdentityOAuth.IdentityOAuthGeneralConfigClass')
   #set ($configDoc = $xwiki.getDocument('IdentityOAuth.IdentityOAuthGeneralConfiguration'))
   #set ($editing = $xcontext.action == 'edit' || $xcontext.action == 'admin')
   #set ($mode = "#if ($editing)edit#{else}view#end")
@@ -80,9 +81,12 @@
   #else
     &lt;div class="xform"&gt;
   #end
-  &lt;h3&gt;$escapetool.xml($services.localization.render('admin.idoauth.default.heading'))&lt;/h3&gt;
+  &lt;h2&gt;$escapetool.xml($services.localization.render('admin.idoauth.default.heading'))&lt;/h2&gt;
   &lt;p class="noitems"&gt;$escapetool.xml($services.localization.render('admin.idoauth.default.description'))&lt;/p&gt;
   #showProperty($configDoc $identityOAuthProviderClassName 'active')
+  &lt;h2&gt;$escapetool.xml($services.localization.render('admin.idoauth.general.heading'))&lt;/h2&gt;
+  &lt;p class="noitems"&gt;$escapetool.xml($services.localization.render('admin.idoauth.general.description'))&lt;/p&gt;
+  #showProperty($configDoc $identityOAuthGeneralConfigClassName 'defaultProvider')
   #if ($xcontext.action == 'admin')
     &lt;p&gt;
       &lt;input type="submit" class="btn btn-primary" name="action_saveandcontinue"
