@@ -271,14 +271,13 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
         if (triple != null && triple.getLeft() != null) {
             try {
                 InputStream newAvatarInputStream = triple.getLeft();
-                log.debug("Obtained user-image: " + newAvatarInputStream);
+                log.debug("Received profile photo [{}] from provider.", triple.getRight());
                 fileName = getFileName(triple);
 
-                // Add avatar only if it's new.
                 if (currentAvatar == null || !isSamePicture(currentAvatar, newAvatarInputStream)) {
-                    log.debug("Avatar changed " + fileName);
                     userObj.set(AVATAR, fileName, contextProvider.get());
                     userDoc.setAttachment(fileName, newAvatarInputStream, contextProvider.get());
+                    log.debug("Added new avatar [{}].", fileName);
                     return true;
                 }
             } catch (Exception e) {
