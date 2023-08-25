@@ -19,7 +19,6 @@
  */
 package com.xwiki.identityoauth.internal;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,7 +44,6 @@ import org.xwiki.query.QueryManager;
 import org.xwiki.stability.Unstable;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -270,13 +268,21 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
         Triple<InputStream, String, String> triple = provider.fetchUserImage(lastModified, id, token);
         if (triple != null && triple.getLeft() != null) {
             try {
-                InputStream newAvatarInputStream = triple.getLeft();
                 log.debug("Received profile photo [{}] from provider.", triple.getRight());
                 fileName = getFileName(triple);
 
-                if (currentAvatar == null || !isSamePicture(currentAvatar, newAvatarInputStream)) {
+                // Create a temporary attachment, in order to not lose the content of the InputStream when it is read
+                // for comparison.
+                XWikiAttachment tempAttachment = new XWikiAttachment();
+                tempAttachment.setContent(triple.getLeft());
+
+                if (currentAvatar == null || !IOUtils.contentEquals(
+                    tempAttachment.getContentInputStream(this.contextProvider.get()),
+                    currentAvatar.getContentInputStream(this.contextProvider.get())))
+                {
                     userObj.set(AVATAR, fileName, contextProvider.get());
-                    userDoc.setAttachment(fileName, newAvatarInputStream, contextProvider.get());
+                    userDoc.setAttachment(fileName, tempAttachment.getContentInputStream(this.contextProvider.get()),
+                        contextProvider.get());
                     log.debug("Added new avatar [{}].", fileName);
                     return true;
                 }
@@ -301,13 +307,6 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
             }
         }
         return fileName;
-    }
-
-    private boolean isSamePicture(XWikiAttachment currentAvatar, InputStream newAvatar)
-        throws XWikiException, IOException
-    {
-        return currentAvatar.getContentLongSize(contextProvider.get()) == newAvatar.available()
-            && IOUtils.contentEquals(currentAvatar.getContentInputStream(this.contextProvider.get()), newAvatar);
     }
 
     DocumentReference getXWikiUserClassRef()
