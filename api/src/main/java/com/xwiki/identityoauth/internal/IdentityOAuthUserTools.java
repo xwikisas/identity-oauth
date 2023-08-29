@@ -19,6 +19,7 @@
  */
 package com.xwiki.identityoauth.internal;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
@@ -251,43 +253,63 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
     }
 
     private boolean fetchUserImage(XWikiDocument userDoc, BaseObject userObj,
-            IdentityOAuthProvider.AbstractIdentityDescription id,
-            IdentityOAuthProvider provider, String token)
+        IdentityOAuthProvider.AbstractIdentityDescription id, IdentityOAuthProvider provider, String token)
     {
         String fileName = userObj.getStringValue(AVATAR);
         Date lastModified = null;
+        XWikiAttachment currentAvatar = null;
         if (fileName != null && fileName.length() > 0) {
-            XWikiAttachment attachment = userDoc.getAttachment(fileName);
-            if (attachment != null) {
+            currentAvatar = userDoc.getAttachment(fileName);
+            if (currentAvatar != null) {
                 // randomise modification date 15 minutes before so as to prevent tracing by caching
-                lastModified = new Date((int) (attachment.getDate().getTime()
-                        - 1000 * Math.floor(Math.random() * 15 * 60)));
+                lastModified =
+                    new Date((int) (currentAvatar.getDate().getTime() - 1000 * Math.floor(Math.random() * 15 * 60)));
             }
         }
         Triple<InputStream, String, String> triple = provider.fetchUserImage(lastModified, id, token);
         if (triple != null && triple.getLeft() != null) {
             try {
-                log.debug("Obtained user-image: " + triple.getLeft());
-                fileName = triple.getRight();
-                String mediaType = triple.getMiddle();
-                if (fileName == null) {
-                    if ("image/jpeg".equals(mediaType)) {
-                        fileName = "image.jpeg";
-                    } else if ("image/png".equals(mediaType)) {
-                        fileName = "image.png";
-                    } else {
-                        throw new IllegalStateException("Unsupported avatar picture type \"" + mediaType + "\".");
-                    }
+                log.debug("Received profile photo [{}] from provider.", triple.getRight());
+                fileName = getFileName(triple);
+
+                // Add a bookmark at the start of the Input Stream, to not lose the content when it is read for
+                // comparison.
+                InputStream newAvatarInputStream = triple.getLeft();
+                if (!newAvatarInputStream.markSupported()) {
+                    newAvatarInputStream = new ByteArrayInputStream(IOUtils.toByteArray(newAvatarInputStream));
                 }
-                log.debug("Avatar changed " + fileName);
-                userObj.set(AVATAR, fileName, contextProvider.get());
-                userDoc.setAttachment(fileName, triple.getLeft(), contextProvider.get());
-                return true;
+                newAvatarInputStream.mark(0);
+
+                if (currentAvatar == null || !IOUtils.contentEquals(
+                    currentAvatar.getContentInputStream(this.contextProvider.get()), newAvatarInputStream))
+                {
+                    newAvatarInputStream.reset();
+                    userObj.set(AVATAR, fileName, contextProvider.get());
+                    userDoc.setAttachment(fileName, newAvatarInputStream, contextProvider.get());
+                    log.debug("Added new avatar [{}].", fileName);
+                    return true;
+                }
             } catch (Exception e) {
                 throw new IdentityOAuthException("Trouble at fetching user-image.", e);
             }
         }
         return false;
+    }
+
+    private String getFileName(Triple<InputStream, String, String> triple)
+    {
+        String fileName = triple.getRight();
+        String mediaType = triple.getMiddle();
+        if (fileName == null) {
+            if ("image/jpeg".equals(mediaType)) {
+                fileName = "image.jpeg";
+            } else if ("image/png".equals(mediaType)) {
+                fileName = "image.png";
+            } else {
+                throw new IllegalStateException("Unsupported avatar picture type \"" + mediaType + "\".");
+            }
+        }
+        return fileName;
     }
 
     DocumentReference getXWikiUserClassRef()
