@@ -19,6 +19,7 @@
  */
 package com.xwiki.identityoauth.internal;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
@@ -271,18 +272,20 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
                 log.debug("Received profile photo [{}] from provider.", triple.getRight());
                 fileName = getFileName(triple);
 
-                // Create a temporary attachment, in order to not lose the content of the InputStream when it is read
-                // for comparison.
-                XWikiAttachment tempAttachment = new XWikiAttachment();
-                tempAttachment.setContent(triple.getLeft());
+                // Add a bookmark at the start of the Input Stream, to not lose the content when it is read for
+                // comparison.
+                InputStream newAvatarInputStream = triple.getLeft();
+                if (!newAvatarInputStream.markSupported()) {
+                    newAvatarInputStream = new ByteArrayInputStream(IOUtils.toByteArray(newAvatarInputStream));
+                }
+                newAvatarInputStream.mark(0);
 
                 if (currentAvatar == null || !IOUtils.contentEquals(
-                    tempAttachment.getContentInputStream(this.contextProvider.get()),
-                    currentAvatar.getContentInputStream(this.contextProvider.get())))
+                    currentAvatar.getContentInputStream(this.contextProvider.get()), newAvatarInputStream))
                 {
+                    newAvatarInputStream.reset();
                     userObj.set(AVATAR, fileName, contextProvider.get());
-                    userDoc.setAttachment(fileName, tempAttachment.getContentInputStream(this.contextProvider.get()),
-                        contextProvider.get());
+                    userDoc.setAttachment(fileName, newAvatarInputStream, contextProvider.get());
                     log.debug("Added new avatar [{}].", fileName);
                     return true;
                 }
