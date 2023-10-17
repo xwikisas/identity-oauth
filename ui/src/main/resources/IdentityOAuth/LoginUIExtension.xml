@@ -304,6 +304,11 @@
             } else {
                 baseUrl = url.substring(0, url.indexOf('?'));
             }
+            // The xredirect parameter is encoded and added from the server side, but the anchor part is not accessible
+            // from there, and only added back after. So make sure that this is encoded as well as part of this parameter.
+            if (url.indexOf('#') &gt; -1) {
+              url = url.replace('#', encodeURIComponent('#'));
+            }
             if (url.indexOf('identityOAuth=')&gt;=0) {
                 url = url.replace(/identityOAuth=[a-zA-Z]*/, "identityOAuth=start");
             } else {
