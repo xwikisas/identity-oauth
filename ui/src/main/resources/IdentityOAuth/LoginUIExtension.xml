@@ -293,6 +293,60 @@
       // providers are defined.
       document.addEventListener('DOMContentLoaded', function() {
         require(['jquery', 'xwiki-events-bridge', 'xwiki-meta'], function($, xm) {
+          var getURLParams = function(url) {
+            let obj = {};
+            const queryString = url.split('?')[1];
+            if (queryString) {
+              const params = queryString.split('&amp;');
+              for (var i = 0; i &lt; params.length; i++) {
+                const param = params[i].split('=');
+
+                const paramValue = param[1].length &gt; 0 ? param[1] : '';
+                obj[param[0]] = paramValue;
+              }
+            }
+            return obj;
+          };
+          var getUpdatedRedirect = function(xredirect, anchor) {
+            xredirect = decodeURIComponent(xredirect);
+            // Don't override existing anchors.
+            if (xredirect.indexOf('#') &lt; 0) {
+              xredirect += anchor;
+            }
+            return encodeURIComponent(xredirect);
+          };
+          var toQueryString = function(params) {
+            let queryString = '';
+            for (const param of Object.entries(params)) {
+              if (queryString.length &gt; 0) {
+                queryString += '&amp;';
+              }
+              queryString += param.join('=');
+            }
+            return queryString;
+          };
+          var updateAnchor = function(url, anchor) {
+            let queryString = '';
+            // IE11 does not have support for URLSearchParams. This check should be removed once the XWiki parent is upgraded to a
+            // version &gt;= 14.0, where the IE11 support was dropped.
+            if (typeof URLSearchParams === 'function') {
+              const params = new URL(url).searchParams;
+              let xredirect = params.get('xredirect');
+              if (xredirect != undefined) {
+                params.set('xredirect', getUpdatedRedirect(xredirect, anchor));
+              }
+              queryString = params.toString();
+            } else {
+              const params = getURLParams(url);
+              let xredirect = params['xredirect'];
+              if (xredirect != undefined) {
+                params['xredirect'] = getUpdatedRedirect(xredirect, anchor);
+              }
+              queryString = toQueryString(params);
+            }
+            url = url.split('?')[0] + '?' + queryString;
+            return url;
+          };
           window.loginWithXWiki = function() {
               jQuery(".panel .panel-body dl").show()
               return false;
@@ -303,6 +357,12 @@
                 url=url+'?';
             } else {
                 baseUrl = url.substring(0, url.indexOf('?'));
+            }
+            // The xredirect parameter is encoded and added from the server side, but the anchor part is not accessible
+            // from there, and only added back after by the browser. So make sure that this is encoded as well as part
+            // of the redirect parameter.
+            if (url.indexOf('#') &gt; -1) {
+              url = updateAnchor(url.split('#')[0], window.location.hash);
             }
             if (url.indexOf('identityOAuth=')&gt;=0) {
                 url = url.replace(/identityOAuth=[a-zA-Z]*/, "identityOAuth=start");
