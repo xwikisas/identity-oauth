@@ -87,6 +87,10 @@ public class CookieAuthenticationPersistence implements Initializable
     @Inject
     private Provider<IdentityOAuthConfigTools> gaXwikiObjects;
 
+    @Inject
+    @Named("identity/permanent")
+    private ConfigurationSource permanentConfiguration;
+
     private String cookiePrefix;
 
     private String cookiePath;
@@ -114,11 +118,7 @@ public class CookieAuthenticationPersistence implements Initializable
         this.cookiePrefix = xwikiCfg.getProperty(COOKIE_PREFIX_PROPERTY, "");
         this.cookiePath = xwikiCfg.getProperty(COOKIE_PATH_PROPERTY, "/");
 
-        this.encryptionKey = xwikiCfg.getProperty(ENCRYPTION_KEY_PROPERTY);
-        // In case the property was not defined, fall back on the XWiki encryption key property value.
-        if (this.encryptionKey == null) {
-            this.encryptionKey = xwikiCfg.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY);
-        }
+        this.encryptionKey = getEncryptionKey();
 
         String[] cdlist = StringUtils.split(xwikiCfg.getProperty(COOKIE_DOMAINS_PROPERTY), ',');
 
@@ -183,14 +183,29 @@ public class CookieAuthenticationPersistence implements Initializable
         contextProvider.get().getResponse().addCookie(cookie);
     }
 
+    private String getEncryptionKey()
+    {
+        String encryptionKey = xwikiCfg.getProperty(ENCRYPTION_KEY_PROPERTY);
+        // In case the property was not defined, fall back on the XWiki encryption key property value.
+        if (encryptionKey == null) {
+            encryptionKey = xwikiCfg.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY);
+        }
+        // Starting with XWIKI-542:The cookie encryption keys should be randomly generated, when the encryption key is
+        // not declared, it's value is automatically generated and stored in the permanent directory, instead of using
+        // default values as before.
+        if (encryptionKey == null) {
+            encryptionKey = this.permanentConfiguration.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY, String.class);
+        }
+        return encryptionKey;
+    }
+
     private Cipher getCipher(boolean encrypt)
         throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IdentityOAuthException
     {
         Cipher cipher;
         String secretKey = encryptionKey;
         if (secretKey != null) {
-            secretKey = secretKey.substring(0, 24);
-            SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), CIPHER_ALGORITHM);
+            SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), 0, 24, CIPHER_ALGORITHM);
             cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, key);
         } else {
