@@ -185,18 +185,18 @@ public class CookieAuthenticationPersistence implements Initializable
 
     private String getEncryptionKey()
     {
-        String encryptionKey = xwikiCfg.getProperty(ENCRYPTION_KEY_PROPERTY);
+        String key = xwikiCfg.getProperty(ENCRYPTION_KEY_PROPERTY);
         // In case the property was not defined, fall back on the XWiki encryption key property value.
-        if (encryptionKey == null) {
-            encryptionKey = xwikiCfg.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY);
+        if (key == null) {
+            key = xwikiCfg.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY);
         }
         // Starting with XWIKI-542:The cookie encryption keys should be randomly generated, when the encryption key is
         // not declared, it's value is automatically generated and stored in the permanent directory, instead of using
         // default values as before.
-        if (encryptionKey == null) {
-            encryptionKey = this.permanentConfiguration.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY, String.class);
+        if (key == null) {
+            key = this.permanentConfiguration.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY, String.class);
         }
-        return encryptionKey;
+        return key;
     }
 
     private Cipher getCipher(boolean encrypt)
