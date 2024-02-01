@@ -36,6 +36,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.configuration.ConfigurationSource;
 
@@ -81,15 +83,13 @@ public class CookieAuthenticationPersistence implements Initializable
 
     private static final String UNDERSCORE = "_";
 
+    private static final String PERMANENT_HINT = "permanent";
+
     @Inject
     private Logger logger;
 
     @Inject
     private Provider<IdentityOAuthConfigTools> gaXwikiObjects;
-
-    @Inject
-    @Named("identity/permanent")
-    private ConfigurationSource permanentConfiguration;
 
     private String cookiePrefix;
 
@@ -109,6 +109,9 @@ public class CookieAuthenticationPersistence implements Initializable
     @Inject
     @Named("xwikicfg")
     private ConfigurationSource xwikiCfg;
+
+    @Inject
+    private ComponentManager componentManager;
 
     /**
      * Builds a configured object.
@@ -194,9 +197,29 @@ public class CookieAuthenticationPersistence implements Initializable
         // not declared, it's value is automatically generated and stored in the permanent directory, instead of using
         // default values as before.
         if (key == null) {
-            key = this.permanentConfiguration.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY, String.class);
+            ConfigurationSource permConfiguration = getPermanentConfiguration();
+            key = permConfiguration != null ? permConfiguration.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY, String.class)
+                : null;
+        }
+        // If no key was found, the ciphers cannot be initialized.
+        if (key == null) {
+            throw new IdentityOAuthException(
+                "Unable to get encryption key. Please check the documentation for indications.");
         }
         return key;
+    }
+
+    private ConfigurationSource getPermanentConfiguration()
+    {
+        // Try to get the current XWiki implementation, in case it is present.
+        if (componentManager.hasComponent(ConfigurationSource.class, PERMANENT_HINT)) {
+            try {
+                return componentManager.getInstance(ConfigurationSource.class, PERMANENT_HINT);
+            } catch (ComponentLookupException e) {
+                // Nothing to do.
+            }
+        }
+        return null;
     }
 
     private Cipher getCipher(boolean encrypt)
