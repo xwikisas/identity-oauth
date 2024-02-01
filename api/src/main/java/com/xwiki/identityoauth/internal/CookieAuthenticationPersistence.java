@@ -36,6 +36,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.configuration.ConfigurationSource;
 
@@ -81,6 +83,8 @@ public class CookieAuthenticationPersistence implements Initializable
 
     private static final String UNDERSCORE = "_";
 
+    private static final String PERMANENT_HINT = "permanent";
+
     @Inject
     private Logger logger;
 
@@ -106,6 +110,9 @@ public class CookieAuthenticationPersistence implements Initializable
     @Named("xwikicfg")
     private ConfigurationSource xwikiCfg;
 
+    @Inject
+    private ComponentManager componentManager;
+
     /**
      * Builds a configured object.
      */
@@ -114,11 +121,7 @@ public class CookieAuthenticationPersistence implements Initializable
         this.cookiePrefix = xwikiCfg.getProperty(COOKIE_PREFIX_PROPERTY, "");
         this.cookiePath = xwikiCfg.getProperty(COOKIE_PATH_PROPERTY, "/");
 
-        this.encryptionKey = xwikiCfg.getProperty(ENCRYPTION_KEY_PROPERTY);
-        // In case the property was not defined, fall back on the XWiki encryption key property value.
-        if (this.encryptionKey == null) {
-            this.encryptionKey = xwikiCfg.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY);
-        }
+        this.encryptionKey = getEncryptionKey();
 
         String[] cdlist = StringUtils.split(xwikiCfg.getProperty(COOKIE_DOMAINS_PROPERTY), ',');
 
@@ -183,14 +186,49 @@ public class CookieAuthenticationPersistence implements Initializable
         contextProvider.get().getResponse().addCookie(cookie);
     }
 
+    private String getEncryptionKey()
+    {
+        String key = xwikiCfg.getProperty(ENCRYPTION_KEY_PROPERTY);
+        // In case the property was not defined, fall back on the XWiki encryption key property value.
+        if (key == null) {
+            key = xwikiCfg.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY);
+        }
+        // Starting with XWIKI-542:The cookie encryption keys should be randomly generated, when the encryption key is
+        // not declared, it's value is automatically generated and stored in the permanent directory, instead of using
+        // default values as before.
+        if (key == null) {
+            ConfigurationSource permConfiguration = getPermanentConfiguration();
+            key = permConfiguration != null ? permConfiguration.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY, String.class)
+                : null;
+        }
+        // If no key was found, the ciphers cannot be initialized.
+        if (key == null) {
+            throw new IdentityOAuthException(
+                "Unable to get encryption key. Please check the documentation for indications.");
+        }
+        return key;
+    }
+
+    private ConfigurationSource getPermanentConfiguration()
+    {
+        // Try to get the current XWiki implementation, in case it is present.
+        if (componentManager.hasComponent(ConfigurationSource.class, PERMANENT_HINT)) {
+            try {
+                return componentManager.getInstance(ConfigurationSource.class, PERMANENT_HINT);
+            } catch (ComponentLookupException e) {
+                // Nothing to do.
+            }
+        }
+        return null;
+    }
+
     private Cipher getCipher(boolean encrypt)
         throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IdentityOAuthException
     {
         Cipher cipher;
         String secretKey = encryptionKey;
         if (secretKey != null) {
-            secretKey = secretKey.substring(0, 24);
-            SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), CIPHER_ALGORITHM);
+            SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), 0, 24, CIPHER_ALGORITHM);
             cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, key);
         } else {
