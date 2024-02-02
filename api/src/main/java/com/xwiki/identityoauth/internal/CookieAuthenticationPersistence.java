@@ -201,11 +201,17 @@ public class CookieAuthenticationPersistence implements Initializable
             key = permConfiguration != null ? permConfiguration.getProperty(XWIKI_ENCRYPTION_KEY_PROPERTY, String.class)
                 : null;
         }
-        // If no key was found, the ciphers cannot be initialized.
+
+        // If no key was found, or if it is too short, the ciphers cannot be initialized.
         if (key == null) {
             throw new IdentityOAuthException(
                 "Unable to get encryption key. Please check the documentation for indications.");
+        } else if (key.length() < 24) {
+            throw new IdentityOAuthException(
+                "The encryption key value defined in xwiki.cfg needs to have a length of at least 24 characters. Please"
+                    + " check documentation and update it.");
         }
+
         return key;
     }
 
