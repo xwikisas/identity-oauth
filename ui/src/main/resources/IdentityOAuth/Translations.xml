@@ -44,6 +44,7 @@ admin.idoauth.default.description=Configurations for the basic XWiki login.
 admin.idoauth.general.heading=Identity OAuth Providers
 admin.idoauth.general.description=General configurations for the Identity OAuth providers, considering the XWiki login option as the default implementation.
 
+idoauth.extension.name=Identity OAuth Application (Pro)
 idoauth.config.heading=Identity OAuth Integration Configuration
 IdentityOAuth.IdentityOAuthConfigClass_config.explanation=XWiki can be integrated with an external provider.
 
