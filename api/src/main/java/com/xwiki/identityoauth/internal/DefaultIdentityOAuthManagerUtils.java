@@ -49,7 +49,7 @@ import static com.xwiki.identityoauth.internal.IdentityOAuthConstants.CHANGE_ME_
  */
 @Component(roles = DefaultIdentityOAuthManagerUtils.class)
 @Singleton
-class DefaultIdentityOAuthManagerUtils
+public class DefaultIdentityOAuthManagerUtils
 {
     @Inject
     private IdentityOAuthConfigTools ioConfigObjects;
