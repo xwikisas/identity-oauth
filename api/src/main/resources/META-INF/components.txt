@@ -7,3 +7,4 @@ com.xwiki.identityoauth.internal.IdentityOAuthSessionInfoProvider
 com.xwiki.identityoauth.internal.IdentityOAuthUserTools
 com.xwiki.identityoauth.internal.DefaultIdentityOAuthProvider
 com.xwiki.identityoauth.IdentityOAuthScriptService
+com.xwiki.identityoauth.internal.DefaultIdentityOAuthManagerUtils

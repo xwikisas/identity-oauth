@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<xwikidoc version="1.4" reference="IdentityOAuth.IdentityOAuthGeneralConfiguration" locale="">
+<xwikidoc version="1.5" reference="IdentityOAuth.IdentityOAuthGeneralConfiguration" locale="">
   <web>IdentityOAuth</web>
   <name>IdentityOAuthGeneralConfiguration</name>
   <language/>
@@ -53,14 +53,14 @@
       <validationScript/>
       <defaultProvider>
         <cache>0</cache>
-        <classname/>
+        <classname>IdentityOAuth.OAuthProviderClass</classname>
         <customDisplay/>
         <defaultValue/>
         <disabled>0</disabled>
         <displayType>select</displayType>
         <freeText>allowed</freeText>
         <hint/>
-        <idField/>
+        <idField>providerHint</idField>
         <largeStorage>0</largeStorage>
         <multiSelect>0</multiSelect>
         <name>defaultProvider</name>
@@ -72,7 +72,7 @@
         <separators/>
         <size>1</size>
         <sort/>
-        <sql>select providerHint.value from XWikiDocument doc, BaseObject as obj, StringProperty as providerHint where doc.fullName = obj.name and obj.className = 'IdentityOAuth.OAuthProviderClass' and providerHint.id.id=obj.id and providerHint.name='providerHint'</sql>
+        <sql/>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
