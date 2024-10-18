@@ -232,7 +232,7 @@
     #elseif ($request.identityOAuth)
       #set ($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
     #else
-      #set ($defaultProvider = $generalConfigObj.getValue('defaultProvider'))
+      #set ($defaultProvider = $identityOAuth.getDefaultProvider())
       #if ("$!defaultProvider" != "")
         #redirectToProvider($defaultProvider)
       #else
