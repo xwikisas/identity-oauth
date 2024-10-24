@@ -19,10 +19,8 @@
  */
 package com.xwiki.identityoauth.internal;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -30,26 +28,26 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.context.Execution;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
-import com.xwiki.identityoauth.IdentityOAuthException;
 import com.xwiki.identityoauth.IdentityOAuthProvider;
 
 import static com.xwiki.identityoauth.internal.IdentityOAuthConstants.CHANGE_ME_LOGIN_URL;
 
 /**
- * Collection of functions used by {@link DefaultIdentityOAuthManager}.
+ * Collection of functions used by {@link DefaultIdentityOAuthManager} at initializing, resetting and processing
+ * resources.
  *
  * @version $Id$
  * @since 1.7.6
  */
-@Component(roles = DefaultIdentityOAuthManagerUtils.class)
+@Component(roles = DefaultIdentityOAuthManagerInitiator.class)
 @Singleton
-public class DefaultIdentityOAuthManagerUtils
+public class DefaultIdentityOAuthManagerInitiator
 {
     @Inject
     private IdentityOAuthConfigTools ioConfigObjects;
@@ -64,10 +62,21 @@ public class DefaultIdentityOAuthManagerUtils
     private Provider<IdentityOAuthAuthService> authServiceProvider;
 
     @Inject
-    private IdentityOAuthUserTools ioUserProc;
+    private Execution execution;
 
     @Inject
     private Logger log;
+
+    /**
+     * If the {@link Execution} context is initialized, it will set the flag for "bypassDomainSecurityCheck" to
+     * {@code true}.
+     */
+    public void tryBypassDomainSecurityCheck()
+    {
+        if (execution.getContext() != null) {
+            execution.getContext().setProperty("bypassDomainSecurityCheck", true);
+        }
+    }
 
     /**
      * Clears and rebuilds the entire provider map.
@@ -154,66 +163,6 @@ public class DefaultIdentityOAuthManagerUtils
             } catch (Exception e) {
                 log.warn("Failed initting authService", e);
             }
-        }
-    }
-
-    /**
-     * Performs the necessary communication with the OAuth provider to fetch identity and update the XWiki-user.
-     *
-     * @param provider current provider.
-     * @param providerHint provider hint.
-     * @param sessionInfo the session info.
-     * @return "ok"
-     * @throws IOException if an input or output exception occur.
-     */
-    String processOAuthReturn(IdentityOAuthSessionInfo sessionInfo, IdentityOAuthProvider provider,
-        String providerHint) throws IOException
-    {
-        checkIfProviderIsActive(provider);
-        log.debug("Return OAuth.");
-        // collect provider-name (an OAuth return is single-use)
-        sessionInfo.setProviderAuthorizationRunning(null);
-        String authorization =
-            provider.readAuthorizationFromReturn(xwikiContextProvider.get().getRequest().getParameterMap());
-        Pair<String, Date> token = provider.createToken(authorization);
-
-        // store auth and token
-        sessionInfo.setAuthorizationCode(providerHint, authorization);
-        sessionInfo.setToken(providerHint, token.getLeft());
-        sessionInfo.setTokenExpiry(providerHint, token.getRight());
-
-        IdentityOAuthProvider.AbstractIdentityDescription id = provider.fetchIdentityDetails(token.getLeft());
-        String xwikiUser = ioUserProc.updateXWikiUser(id, provider, token.getLeft());
-
-        // login at next call to the authenticator (the next http request)
-        sessionInfo.setUserToLogIn(xwikiUser);
-        log.debug("User will be logged-in.");
-
-        // process redirect
-        // getSessionInfo().xredirect is guaranteed to be not null in processOAuthStart
-        // we expect the final redirect to be an "allowed redirect" (probably the same URL as the current page)
-        xwikiContextProvider.get().getResponse().sendRedirect(sessionInfo.pickXredirect());
-        log.debug("Redirecting user to originally intended URL.");
-
-        return "ok";
-    }
-
-    /**
-     * Check if the provider is active.
-     *
-     * @param provider the checked provider.
-     */
-    void checkIfProviderIsActive(IdentityOAuthProvider provider)
-    {
-        if (provider == null) {
-            throw new IdentityOAuthException("Provider \"" + provider + "\" not found.");
-        }
-        if (!provider.isActive()) {
-            throw new IdentityOAuthException("The provider \"" + provider + "\" is inactive.");
-        }
-        if (!provider.isReady()) {
-            throw new IdentityOAuthException(
-                "The provider  \"" + provider + "\" is not ready (probably a missing license).");
         }
     }
 }
