@@ -57,7 +57,7 @@ public class IdentityOAuthScriptService implements ScriptService
     /**
      * Get the set default provider from the Identity OAuth general configuration.
      *
-     * @return the set default provider.
+     * @return the default provider.
      */
     public String getDefaultProvider()
     {
