@@ -22,7 +22,7 @@
   <parent>
     <groupId>com.xwiki.parent</groupId>
     <artifactId>xwikisas-parent-platform</artifactId>
-    <version>13.10-3</version>
+    <version>14.10-1</version>
   </parent>
 
   <groupId>com.xwiki.identity-oauth</groupId>
@@ -35,7 +35,7 @@
 
   <properties>
     <licensing.version>1.25</licensing.version>
-    <xwiki.minversion>13.10</xwiki.minversion>
+    <xwiki.minversion>14.10</xwiki.minversion>
   </properties>
 
   <issueManagement>

@@ -29,7 +29,8 @@
   <packaging>jar</packaging>
 
   <name>Identity OAuth Integration (API)</name>
-  <description>This is the XWiki-API part of the Identity OAuth App which allows single sign on to several others.</description>
+  <description>This is the XWiki-API part of the Identity OAuth App which allows single sign on to several others.
+  </description>
 
   <dependencyManagement>
     <dependencies>

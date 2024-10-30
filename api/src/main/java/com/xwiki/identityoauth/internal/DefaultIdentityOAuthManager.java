@@ -21,7 +21,6 @@ package com.xwiki.identityoauth.internal;
 
 import java.io.StringReader;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,7 +37,6 @@ import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Disposable;
 import org.xwiki.component.phase.Initializable;
-import org.xwiki.context.Execution;
 import org.xwiki.rendering.converter.Converter;
 import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
 import org.xwiki.rendering.renderer.printer.WikiPrinter;
@@ -49,6 +47,7 @@ import com.xpn.xwiki.XWikiContext;
 import com.xwiki.identityoauth.IdentityOAuthException;
 import com.xwiki.identityoauth.IdentityOAuthManager;
 import com.xwiki.identityoauth.IdentityOAuthProvider;
+import com.xwiki.identityoauth.LifeCycle;
 
 /**
  * Set of methods accessible to the scripts using the IdentityOAuth functions. The manager is the entry point for the
@@ -65,22 +64,22 @@ import com.xwiki.identityoauth.IdentityOAuthProvider;
 @Component
 @Singleton
 public class DefaultIdentityOAuthManager
-        implements IdentityOAuthManager, Initializable, Disposable, IdentityOAuthConstants
+    implements IdentityOAuthManager, Initializable, Disposable, IdentityOAuthConstants
 {
     private LifeCycle lifeCycleState = LifeCycle.CONSTRUCTED;
 
     // own components
     @Inject
-    private IdentityOAuthConfigTools ioConfigObjects;
-
-    @Inject
     private IdentityOAuthUserTools ioUserProc;
 
     /* The authService is a subclass of XWikiAuthServiceImpl which may be impossible to construct
-    *  at the initialization of this component;
-    *  Thus a provider is injected which lets the authService be built at the application startup event. */
+     *  at the initialization of this component;
+     *  Thus a provider is injected which lets the authService be built at the application startup event. */
     @Inject
     private Provider<IdentityOAuthAuthService> authServiceProvider;
+
+    @Inject
+    private IdentityOAuthProviderLoader managerInitiator;
 
     // ------ services from the environment
     @Inject
@@ -95,11 +94,6 @@ public class DefaultIdentityOAuthManager
     @Inject
     private Provider<IdentityOAuthSessionInfo> sessionInfoProvider;
 
-    // initialisation state
-
-    @Inject
-    private Execution execution;
-
     // -------------------------------------------------
     private Map<String, IdentityOAuthProvider> providers = new HashMap<>();
 
@@ -110,59 +104,6 @@ public class DefaultIdentityOAuthManager
     {
         log.info("IdentityOAuthManagerImpl initializing.");
         updateLifeCycle(LifeCycle.INITIALIZED);
-    }
-
-    private void updateLifeCycle(LifeCycle lf)
-    {
-        log.debug("Lifecycle to " + lf);
-        lifeCycleState = lf;
-    }
-
-    private void startIfNeedBe(boolean completeWithProviders)
-    {
-        if (lifeCycleState == LifeCycle.RUNNING) {
-            return;
-        }
-        if (lifeCycleState != LifeCycle.INITIALIZED) {
-            throw new IllegalStateException("Can't start when in state " + lifeCycleState + "!");
-        }
-        updateLifeCycle(LifeCycle.STARTING);
-        boolean failed = false;
-
-        try {
-            log.debug("Starting...");
-            if (completeWithProviders) {
-                rebuildProviders();
-            }
-            tryInittingAuthService();
-        } catch (Exception e) {
-            e.printStackTrace();
-            failed = true;
-        }
-
-        if (!failed) {
-            log.info("IdentityOAuthManagerImpl is now running.");
-            updateLifeCycle(LifeCycle.RUNNING);
-        } else {
-            updateLifeCycle(LifeCycle.INITIALIZED);
-        }
-    }
-
-    void tryInittingAuthService()
-    {
-        XWiki xwiki = getXWiki();
-        if (xwiki != null) {
-            log.debug("Initting authService.");
-            // We do not verify with the context if the plugin is active and if the license is active
-            // this will be done by the IdentityOAuthAuthService and UI pages later on, when it is called
-            // within a request
-            try {
-                xwiki.setAuthService(authServiceProvider.get());
-                log.debug("Succeeded initting authService,");
-            } catch (Exception e) {
-                log.warn("Failed initting authService", e);
-            }
-        }
     }
 
     /**
@@ -183,27 +124,6 @@ public class DefaultIdentityOAuthManager
         updateLifeCycle(LifeCycle.STOPPED);
     }
 
-    private XWiki getXWiki()
-    {
-        XWiki result = null;
-        XWikiContext xc = this.xwikiContextProvider.get();
-        // XWikiContext could be null at startup when the Context Provider has not been initialized yet (it's
-        // initialized after the first request).
-        if (xc != null) {
-            result = xc.getWiki();
-        }
-        return result;
-    }
-
-    void rebuildProviders()
-    {
-        providers.clear();
-        providerConfigs = ioConfigObjects.loadAndRebuildProviders();
-        for (ProviderConfig config : providerConfigs) {
-            providers.put(config.getName(), config.getProvider());
-        }
-    }
-
     /**
      * Performs XWiki rendering and transformation on the loginCodes of each provider.
      *
@@ -219,13 +139,12 @@ public class DefaultIdentityOAuthManager
                 // Convert input in XWiki Syntax 2.1 into XHTML. The result is stored in the printer.
                 if (config.getProvider().isReady()) {
                     WikiPrinter printer = new DefaultWikiPrinter();
-                    converter.convert(new StringReader(loginCode),
-                        config.getLoginCodeSyntax(), Syntax.XHTML_1_0, printer);
+                    converter.convert(new StringReader(loginCode), config.getLoginCodeSyntax(), Syntax.XHTML_1_0,
+                        printer);
                     renderedLoginCodes.add(
                         "<!-- IdentityOAuth Provider: " + config.getName() + " -->\r\n" + printer.toString());
                 } else {
-                    renderedLoginCodes.add(
-                        "<!-- IdentityOAuth Provider:  " + config.getName() + " not ready -->\r\n");
+                    renderedLoginCodes.add("<!-- IdentityOAuth Provider:  " + config.getName() + " not ready -->\r\n");
                 }
             } catch (Exception e) {
                 renderedLoginCodes.add("BROKEN RENDERING " + config.getName());
@@ -252,25 +171,7 @@ public class DefaultIdentityOAuthManager
     {
         startIfNeedBe(false);
         log.info("Reloading config.");
-        rebuildProviders();
-    }
-
-    // ==================================================================================
-
-    private IdentityOAuthProvider getActiveProvider(String providerHint)
-    {
-        IdentityOAuthProvider provider = providers.get(providerHint);
-        if (provider == null) {
-            throw new IdentityOAuthException("Provider \"" + provider + "\" not found.");
-        }
-        if (!provider.isActive()) {
-            throw new IdentityOAuthException("The provider \"" + provider + "\" is inactive.");
-        }
-        if (!provider.isReady()) {
-            throw new IdentityOAuthException(
-                    "The provider  \"" + provider + "\" is not ready (probably a missing license).");
-        }
-        return provider;
+        providerConfigs = managerInitiator.rebuildProviders(providers);
     }
 
     /**
@@ -291,11 +192,7 @@ public class DefaultIdentityOAuthManager
             IdentityOAuthProvider provider = getActiveProvider(providerHint);
             String oauthBackPage = request.getParameter("browserLocation");
             String redirectUrl = provider.getRemoteAuthorizationUrl(oauthBackPage);
-
-            if (redirectUrl.contains(CHANGE_ME_LOGIN_URL)) {
-                String loginPageUrl = ioConfigObjects.getLoginPageUrl();
-                redirectUrl = redirectUrl.replace(CHANGE_ME_LOGIN_URL, URLEncoder.encode(loginPageUrl, "UTF-8"));
-            }
+            redirectUrl = managerInitiator.maybeModifyRedirectURL(redirectUrl);
 
             // populate sessionInfo with fresh data
             sessionInfoProvider.get().clear(providerHint);
@@ -314,17 +211,14 @@ public class DefaultIdentityOAuthManager
             URL xredirectU = new URL(oauthBackPageU, xredirect);
 
             // only keep xredirect if it matches the browser's location
-            if (xredirectU.getProtocol().equals(oauthBackPageU.getProtocol())
-                    && xredirectU.getHost().equals(oauthBackPageU.getHost())
-                    && xredirectU.getPort() == oauthBackPageU.getPort())
+            if (xredirectU.getProtocol().equals(oauthBackPageU.getProtocol()) && xredirectU.getHost()
+                .equals(oauthBackPageU.getHost()) && xredirectU.getPort() == oauthBackPageU.getPort())
             {
                 sessionInfoProvider.get().setXredirect(xredirect);
             }
 
             log.debug("OAuthStart will redirect to OAuth provider.");
-            if (execution.getContext() != null) {
-                execution.getContext().setProperty("bypassDomainSecurityCheck", true);
-            }
+            managerInitiator.tryBypassDomainSecurityCheck();
             xwikiContextProvider.get().getResponse().sendRedirect(redirectUrl);
             return true;
         } catch (Exception ex) {
@@ -334,9 +228,8 @@ public class DefaultIdentityOAuthManager
     }
 
     /**
-     * Called to express links that invite the user to start an OAuth flow
-     * e.g. to add an extra feature. The user should not be invited to choose
-     * the provider but may need to give her authorization.
+     * Called to express links that invite the user to start an OAuth flow e.g. to add an extra feature. The user should
+     * not be invited to choose the provider but may need to give her authorization.
      *
      * @param provider the provider that we expect will process the return of this URL if followed.
      * @return the URL to redirect to (which may include a redirect to the current URL).
@@ -344,13 +237,7 @@ public class DefaultIdentityOAuthManager
      */
     public String getOAuthStartUrl(IdentityOAuthProvider provider)
     {
-        String p = ioConfigObjects.getLoginPageUrl();
-        if (!p.contains("?")) {
-            p += '?';
-        }
-        p += "provider=" + provider.getProviderHint()
-                + "&identityOAuth=start";
-        return p;
+        return managerInitiator.processOAuthStartUrl(provider);
     }
 
     /**
@@ -365,6 +252,8 @@ public class DefaultIdentityOAuthManager
         return sessionInfoProvider.get().getProviderAuthorizationRunning() != null
             && xwikiContextProvider.get().getRequest().getParameter("code") != null;
     }
+
+    // ==================================================================================
 
     /**
      * Performs the necessary communication with the OAuth provider to fetch identity and update the XWiki-user.
@@ -382,7 +271,7 @@ public class DefaultIdentityOAuthManager
             sessionInfo.setProviderAuthorizationRunning(null);
             IdentityOAuthProvider provider = getActiveProvider(providerHint);
             String authorization =
-                    provider.readAuthorizationFromReturn(xwikiContextProvider.get().getRequest().getParameterMap());
+                provider.readAuthorizationFromReturn(xwikiContextProvider.get().getRequest().getParameterMap());
             Pair<String, Date> token = provider.createToken(authorization);
 
             // store auth and token
@@ -426,8 +315,8 @@ public class DefaultIdentityOAuthManager
      * Receives the named provider even if inactive. This method can only be called when in the /admin/ action and is
      * meant for the administration configuration.
      *
-     * @param name the name of the provider as return by {@link IdentityOAuthProvider#getProviderHint()} and contained
-     *             in the OAuthProviderClass.
+     * @param name the name of the provider as return by {@link IdentityOAuthProvider#getProviderHint()} and
+     *     contained in the OAuthProviderClass.
      * @return The named provider, as configured.
      */
     public IdentityOAuthProvider getProvider(String name)
@@ -449,8 +338,87 @@ public class DefaultIdentityOAuthManager
         provider.receiveFreshToken(sessionInfoProvider.get().getToken(providerHint));
     }
 
-    enum LifeCycle
-    { CONSTRUCTED, INITIALIZED, STARTING, RUNNING, STOPPING, STOPPED }
+    private XWiki getXWiki()
+    {
+        XWiki result = null;
+        XWikiContext xc = this.xwikiContextProvider.get();
+        // XWikiContext could be null at startup when the Context Provider has not been initialized yet (it's
+        // initialized after the first request).
+        if (xc != null) {
+            result = xc.getWiki();
+        }
+        return result;
+    }
+
+    private void updateLifeCycle(LifeCycle lf)
+    {
+        log.debug("Lifecycle to " + lf);
+        lifeCycleState = lf;
+    }
+
+    private void startIfNeedBe(boolean completeWithProviders)
+    {
+        if (lifeCycleState == LifeCycle.RUNNING) {
+            return;
+        }
+        if (lifeCycleState != LifeCycle.INITIALIZED) {
+            throw new IllegalStateException("Can't start when in state " + lifeCycleState + "!");
+        }
+        updateLifeCycle(LifeCycle.STARTING);
+        boolean failed = false;
+
+        try {
+            log.debug("Starting...");
+            if (completeWithProviders) {
+                providerConfigs = managerInitiator.rebuildProviders(providers);
+            }
+            tryInitiatingAuthService();
+        } catch (Exception e) {
+            e.printStackTrace();
+            failed = true;
+        }
+
+        if (!failed) {
+            log.info("IdentityOAuthManagerImpl is now running.");
+            updateLifeCycle(LifeCycle.RUNNING);
+        } else {
+            updateLifeCycle(LifeCycle.INITIALIZED);
+        }
+    }
+
+    /**
+     * Initiate the authentication service.
+     */
+    private void tryInitiatingAuthService()
+    {
+        XWiki xwiki = getXWiki();
+        if (xwiki != null) {
+            log.debug("Initting authService.");
+            // We do not verify with the context if the plugin is active and if the license is active
+            // this will be done by the IdentityOAuthAuthService and UI pages later on, when it is called
+            // within a request
+            try {
+                xwiki.setAuthService(authServiceProvider.get());
+                log.debug("Succeeded initting authService,");
+            } catch (Exception e) {
+                log.warn("Failed initting authService", e);
+            }
+        }
+    }
+
+    private IdentityOAuthProvider getActiveProvider(String providerHint)
+    {
+        IdentityOAuthProvider provider = providers.get(providerHint);
+        if (provider == null) {
+            throw new IdentityOAuthException("Provider \"" + provider + "\" not found.");
+        }
+        if (!provider.isActive()) {
+            throw new IdentityOAuthException("The provider \"" + provider + "\" is inactive.");
+        }
+        if (!provider.isReady()) {
+            throw new IdentityOAuthException(
+                "The provider  \"" + provider + "\" is not ready (probably a missing license).");
+        }
+        return provider;
+    }
 }
-
-
