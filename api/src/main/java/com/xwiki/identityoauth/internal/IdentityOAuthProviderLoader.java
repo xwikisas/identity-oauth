@@ -25,15 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 
-import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiContext;
 import com.xwiki.identityoauth.IdentityOAuthProvider;
 
 import static com.xwiki.identityoauth.internal.IdentityOAuthConstants.CHANGE_ME_LOGIN_URL;
@@ -45,27 +41,15 @@ import static com.xwiki.identityoauth.internal.IdentityOAuthConstants.CHANGE_ME_
  * @version $Id$
  * @since 1.7.6
  */
-@Component(roles = DefaultIdentityOAuthManagerInitiator.class)
+@Component(roles = IdentityOAuthProviderLoader.class)
 @Singleton
-public class DefaultIdentityOAuthManagerInitiator
+public class IdentityOAuthProviderLoader
 {
     @Inject
     private IdentityOAuthConfigTools ioConfigObjects;
 
     @Inject
-    private Provider<XWikiContext> xwikiContextProvider;
-
-    /* The authService is a subclass of XWikiAuthServiceImpl which may be impossible to construct
-     *  at the initialization of this component;
-     *  Thus a provider is injected which lets the authService be built at the application startup event. */
-    @Inject
-    private Provider<IdentityOAuthAuthService> authServiceProvider;
-
-    @Inject
     private Execution execution;
-
-    @Inject
-    private Logger log;
 
     /**
      * If the {@link Execution} context is initialized, it will set the flag for "bypassDomainSecurityCheck" to
@@ -127,42 +111,5 @@ public class DefaultIdentityOAuthManagerInitiator
             modifiedURL = redirectURL.replace(CHANGE_ME_LOGIN_URL, URLEncoder.encode(loginPageUrl, "UTF-8"));
         }
         return modifiedURL;
-    }
-
-    /**
-     * Check if the {@link XWikiContext} has been initialized and return the {@link XWiki}.
-     *
-     * @return the current {@link XWiki} if the {@link XWikiContext} has been initialized, or null otherwise.
-     */
-    XWiki getXWiki()
-    {
-        XWiki result = null;
-        XWikiContext xc = this.xwikiContextProvider.get();
-        // XWikiContext could be null at startup when the Context Provider has not been initialized yet (it's
-        // initialized after the first request).
-        if (xc != null) {
-            result = xc.getWiki();
-        }
-        return result;
-    }
-
-    /**
-     * Initiate the authentication service.
-     */
-    void tryInitiatingAuthService()
-    {
-        XWiki xwiki = getXWiki();
-        if (xwiki != null) {
-            log.debug("Initting authService.");
-            // We do not verify with the context if the plugin is active and if the license is active
-            // this will be done by the IdentityOAuthAuthService and UI pages later on, when it is called
-            // within a request
-            try {
-                xwiki.setAuthService(authServiceProvider.get());
-                log.debug("Succeeded initting authService,");
-            } catch (Exception e) {
-                log.warn("Failed initting authService", e);
-            }
-        }
     }
 }
