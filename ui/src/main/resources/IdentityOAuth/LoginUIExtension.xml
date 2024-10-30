@@ -232,7 +232,7 @@
     #elseif ($request.identityOAuth)
       #set ($statusMsg = "no such identityOAuth operation '$request.identityOAuth'")
     #else
-      #set ($defaultProvider = $identityOAuth.getDefaultProvider())
+      #set ($defaultProvider = $generalConfigObj.getValue('defaultProvider'))
       #if ("$!defaultProvider" != "")
         #redirectToProvider($defaultProvider)
       #else
@@ -329,12 +329,12 @@
           };
           var updateAnchor = function(url, anchor) {
             let queryString = '';
-            const params = getURLParams(url);
-            let xredirect = params['xredirect'];
+            const params = new URL(url).searchParams;
+            let xredirect = params.get('xredirect');
             if (xredirect != undefined) {
-              params['xredirect'] = getUpdatedRedirect(xredirect, anchor);
+              params.set('xredirect', getUpdatedRedirect(xredirect, anchor));
             }
-            queryString = toQueryString(params);
+            queryString = params.toString();
             url = url.split('?')[0] + '?' + queryString;
             return url;
           };
