@@ -55,9 +55,10 @@ public class IdentityOAuthScriptService implements ScriptService
     private ContextualAuthorizationManager authorizationManager;
 
     /**
-     * Get the set default provider from the Identity OAuth general configuration.
+     * Get the default provider value set on the Identity OAuth general configuration.
      *
      * @return the default provider.
+     * @since 1.8
      */
     public String getDefaultProvider()
     {

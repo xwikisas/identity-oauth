@@ -34,7 +34,7 @@ import static com.xwiki.identityoauth.internal.IdentityOAuthConstants.IDENTITY_S
  * configuration of the main wiki.
  *
  * @version $Id$
- * @since 1.7.6
+ * @since 1.8
  */
 @Component
 @Named(IdentityOAuthGeneralConfigurationSource.HINT)

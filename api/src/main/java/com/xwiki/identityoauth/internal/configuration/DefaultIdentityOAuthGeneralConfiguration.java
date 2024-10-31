@@ -33,7 +33,7 @@ import com.xwiki.identityoauth.configuration.IdentityOAuthGeneralConfiguration;
  * Default implementation of {@link IdentityOAuthGeneralConfiguration}.
  *
  * @version $Id$
- * @since 1.7.6
+ * @since 1.8
  */
 @Component
 @Singleton
@@ -44,11 +44,11 @@ public class DefaultIdentityOAuthGeneralConfiguration implements IdentityOAuthGe
 
     @Inject
     @Named(IdentityOAuthGeneralConfigurationSource.HINT)
-    private ConfigurationSource mainConfiguration;
+    private ConfigurationSource configuration;
 
     @Override
     public String getDefaultProvider()
     {
-        return this.mainConfiguration.getProperty(DEFAULT_PROVIDER, "");
+        return this.configuration.getProperty(DEFAULT_PROVIDER, "");
     }
 }
