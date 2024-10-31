@@ -130,6 +130,11 @@
       <artifactId>oidc-authenticator-object</artifactId>
       <version>1.25</version>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-configuration-default</artifactId>
+      <version>${platform.version}</version>
+    </dependency>
   </dependencies>
 
 </project>

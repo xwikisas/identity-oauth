@@ -31,6 +31,8 @@ import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.stability.Unstable;
 
+import com.xwiki.identityoauth.configuration.IdentityOAuthGeneralConfiguration;
+
 /**
  * Script service containing the methods used by the view files contained in the ui module.
  *
@@ -46,7 +48,22 @@ public class IdentityOAuthScriptService implements ScriptService
     private IdentityOAuthManager manager;
 
     @Inject
+    @Named("default")
+    private IdentityOAuthGeneralConfiguration authGeneralConfiguration;
+
+    @Inject
     private ContextualAuthorizationManager authorizationManager;
+
+    /**
+     * Get the default provider value set on the Identity OAuth general configuration.
+     *
+     * @return the default provider.
+     * @since 1.8
+     */
+    public String getDefaultProvider()
+    {
+        return authGeneralConfiguration.getDefaultProvider();
+    }
 
     /**
      * Triggers a request to the identity provider and a redirect of the browser t the OAuth identity-provider's
