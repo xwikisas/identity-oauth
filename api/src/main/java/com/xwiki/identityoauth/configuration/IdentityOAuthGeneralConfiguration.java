@@ -26,7 +26,7 @@ import org.xwiki.stability.Unstable;
  * Identity OAuth general configurations.
  *
  * @version $Id$
- * @since 1.7.6
+ * @since 1.8
  */
 @Role
 @Unstable

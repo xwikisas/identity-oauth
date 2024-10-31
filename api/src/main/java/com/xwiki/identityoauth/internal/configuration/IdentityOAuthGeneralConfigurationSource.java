@@ -45,7 +45,7 @@ public class IdentityOAuthGeneralConfigurationSource extends AbstractWikisConfig
     /**
      * The hint for this component.
      */
-    public static final String HINT = "identity.oauth.configuration.general.current";
+    public static final String HINT = "identity.oauth.configuration.general";
 
     private static final LocalDocumentReference CONFIG_DOC =
         new LocalDocumentReference(IDENTITY_SPACE, "IdentityOAuthGeneralConfiguration");
