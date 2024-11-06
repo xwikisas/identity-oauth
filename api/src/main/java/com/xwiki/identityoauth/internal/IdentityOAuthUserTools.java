@@ -21,7 +21,6 @@ package com.xwiki.identityoauth.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -255,22 +254,16 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
     private boolean fetchUserImage(XWikiDocument userDoc, BaseObject userObj,
         IdentityOAuthProvider.AbstractIdentityDescription id, IdentityOAuthProvider provider, String token)
     {
-        String fileName = userObj.getStringValue(AVATAR);
-        Date lastModified = null;
-        XWikiAttachment currentAvatar = null;
-        if (fileName != null && fileName.length() > 0) {
-            currentAvatar = userDoc.getAttachment(fileName);
-            if (currentAvatar != null) {
-                // randomise modification date 15 minutes before so as to prevent tracing by caching
-                lastModified =
-                    new Date((int) (currentAvatar.getDate().getTime() - 1000 * Math.floor(Math.random() * 15 * 60)));
-            }
+        XWikiAttachment currentAvatar = getAvatarAttachment(userDoc, userObj);
+        if (currentAvatar != null && currentAvatar.getAuthorReference() != null) {
+            return false;
         }
-        Triple<InputStream, String, String> triple = provider.fetchUserImage(lastModified, id, token);
+
+        Triple<InputStream, String, String> triple = provider.fetchUserImage(null, id, token);
         if (triple != null && triple.getLeft() != null) {
             try {
                 log.debug("Received profile photo [{}] from provider.", triple.getRight());
-                fileName = getFileName(triple);
+                String fileName = getFileName(triple);
 
                 // Add a bookmark at the start of the Input Stream, to not lose the content when it is read for
                 // comparison.
@@ -294,6 +287,16 @@ public class IdentityOAuthUserTools implements IdentityOAuthConstants
             }
         }
         return false;
+    }
+
+    private XWikiAttachment getAvatarAttachment(XWikiDocument userDoc, BaseObject userObj)
+    {
+        String fileName = userObj.getStringValue(AVATAR);
+        XWikiAttachment currentAvatar = null;
+        if (fileName != null && !fileName.isEmpty()) {
+            currentAvatar = userDoc.getAttachment(fileName);
+        }
+        return currentAvatar;
     }
 
     private String getFileName(Triple<InputStream, String, String> triple)
