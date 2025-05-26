@@ -34,7 +34,7 @@
   <description>This extension allows users to authenticate to the wiki using external providers</description>
 
   <properties>
-    <licensing.version>1.25</licensing.version>
+    <licensing.version>1.29</licensing.version>
     <xwiki.minversion>14.10</xwiki.minversion>
   </properties>
 
