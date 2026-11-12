@@ -128,7 +128,7 @@
     <dependency>
       <groupId>org.xwiki.contrib.oidc</groupId>
       <artifactId>oidc-authenticator-object</artifactId>
-      <version>1.25</version>
+      <version>1.29.1</version>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
